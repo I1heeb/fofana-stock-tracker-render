@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 📦 Fofana Stock Tracker
 
 > **Système de gestion de stock professionnel développé par Nour Amara**
@@ -159,3 +160,7 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 
 
 
+=======
+# fofana-stock-tracker
+Système de gestion de stock moderne avec Laravel 12
+>>>>>>> eb552ccfc3641ec8bf6b2c2f8390f3403b85e28e
