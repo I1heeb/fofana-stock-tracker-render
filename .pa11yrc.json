@@ -1,0 +1,15 @@
+{
+  "chromeLaunchConfig": {
+    "args": [
+      "--no-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+      "--disable-web-security",
+      "--allow-running-insecure-content",
+      "--disable-features=VizDisplayCompositor"
+    ]
+  },
+  "timeout": 60000,
+  "wait": 5000
+}
+

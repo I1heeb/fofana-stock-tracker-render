@@ -1,0 +1,8 @@
+php artisan migrate
+
+
+
+$user = User::where('email', 'aaaa@dev.com')->first();
+$user->role = 'admin';
+$user->permissions = User::getDefaultPermissions('admin');
+$user->save();
