@@ -23,16 +23,17 @@ class OrderSeeder extends Seeder
 
         // Create sample orders manually (no Faker required)
         $sampleOrders = [
-            ['status' => 'pending', 'total_amount' => 150.00],
-            ['status' => 'processing', 'total_amount' => 89.50],
-            ['status' => 'shipped', 'total_amount' => 245.75],
-            ['status' => 'delivered', 'total_amount' => 67.25],
-            ['status' => 'pending', 'total_amount' => 198.00],
+            ['order_number' => 'ORD-2025-001', 'status' => 'pending', 'total_amount' => 150.00],
+            ['order_number' => 'ORD-2025-002', 'status' => 'processing', 'total_amount' => 89.50],
+            ['order_number' => 'ORD-2025-003', 'status' => 'packed', 'total_amount' => 245.75],
+            ['order_number' => 'ORD-2025-004', 'status' => 'completed', 'total_amount' => 67.25],
+            ['order_number' => 'ORD-2025-005', 'status' => 'pending', 'total_amount' => 198.00],
         ];
 
         foreach ($sampleOrders as $orderData) {
             $order = Order::create([
                 'user_id' => $users->random()->id,
+                'order_number' => $orderData['order_number'],
                 'status' => $orderData['status'],
                 'total_amount' => $orderData['total_amount'],
                 'created_at' => now()->subDays(rand(1, 30)),
