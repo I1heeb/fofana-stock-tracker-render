@@ -109,10 +109,28 @@ class UserManagementController extends Controller
         if (!auth()->user()->isAdmin()) {
             abort(403, 'Access denied. Admin privileges required.');
         }
-        
+
         $user->update(['is_active' => !$user->is_active]);
         $status = $user->is_active ? 'activated' : 'deactivated';
         return back()->with('success', "User {$status} successfully.");
+    }
+
+    public function updateRole(Request $request, User $user)
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Access denied. Admin privileges required.');
+        }
+
+        $validated = $request->validate([
+            'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_PACKAGING_AGENT, User::ROLE_SERVICE_CLIENT])],
+        ]);
+
+        $user->update([
+            'role' => $validated['role'],
+            'permissions' => User::getDefaultPermissions($validated['role']),
+        ]);
+
+        return back()->with('success', 'User role updated successfully.');
     }
 }
 

@@ -795,11 +795,11 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::get('/orders', [App\Http\Controllers\AdminController::class, 'orders'])->name('orders');
     Route::get('/reports', [App\Http\Controllers\AdminController::class, 'reports'])->name('reports');
 
-    // User management
-    Route::get('/users/create', [App\Http\Controllers\AdminController::class, 'createUser'])->name('users.create');
-    Route::post('/users', [App\Http\Controllers\AdminController::class, 'storeUser'])->name('users.store');
-    Route::patch('/users/{user}/role', [App\Http\Controllers\AdminController::class, 'updateUserRole'])->name('users.update-role');
-    Route::delete('/users/{user}', [App\Http\Controllers\AdminController::class, 'deleteUser'])->name('users.delete');
+    // User management (legacy routes - keeping for compatibility)
+    Route::get('/users/create', [App\Http\Controllers\AdminController::class, 'createUser'])->name('users.create-legacy');
+    Route::post('/users', [App\Http\Controllers\AdminController::class, 'storeUser'])->name('users.store-legacy');
+    Route::patch('/users/{user}/role', [App\Http\Controllers\AdminController::class, 'updateUserRole'])->name('users.update-role-legacy');
+    Route::delete('/users/{user}', [App\Http\Controllers\AdminController::class, 'deleteUser'])->name('users.delete-legacy');
 
     // Super Admin management
     Route::post('/users/{user}/make-super-admin', [App\Http\Controllers\AdminController::class, 'makeSuperAdmin'])->name('users.make-super-admin');

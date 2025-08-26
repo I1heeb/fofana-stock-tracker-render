@@ -67,9 +67,8 @@ RUN chmod +x build-assets.sh && ./build-assets.sh
 # Remove dev dependencies after build to reduce image size
 RUN npm prune --production
 
-# Run Laravel setup commands
+# Run Laravel setup commands (skip route:cache due to potential conflicts)
 RUN php artisan config:cache \
-    && php artisan route:cache \
     && php artisan view:cache
 
 # Configure Apache
