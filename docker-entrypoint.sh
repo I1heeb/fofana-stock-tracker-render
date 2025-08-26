@@ -33,9 +33,14 @@ if [ "$DB_CONNECTION" = "pgsql" ]; then
 fi
 
 # Clear any cached configuration that might interfere
-echo "🧹 Clearing cached configuration..."
+echo "🧹 Clearing ALL cached configuration..."
+rm -rf /var/www/html/bootstrap/cache/config.php || true
+rm -rf /var/www/html/bootstrap/cache/services.php || true
+rm -rf /var/www/html/bootstrap/cache/packages.php || true
 php artisan config:clear || true
 php artisan cache:clear || true
+php artisan route:clear || true
+php artisan view:clear || true
 
 # Generate application key if not set
 if [ -z "$APP_KEY" ]; then
@@ -43,9 +48,17 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
 
+# Force create a fresh config cache with our SQLite settings
+echo "🔧 Creating fresh configuration cache..."
+php artisan config:cache
+
 # Verify database configuration before migration
 echo "🔍 Verifying database configuration..."
 php artisan config:show database.default || echo "Config show not available"
+
+# Test database connection
+echo "🔌 Testing database connection..."
+php artisan migrate:status || echo "Migration status check failed, proceeding anyway..."
 
 # Run database migrations
 echo "📊 Running database migrations..."
