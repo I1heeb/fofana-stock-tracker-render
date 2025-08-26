@@ -29,12 +29,11 @@ if [ "$APP_ENV" = "local" ] || [ "$SEED_DATABASE" = "true" ]; then
     php artisan db:seed --force
 fi
 
-# Clear and cache config for production
+# Clear and cache config for production (minimal caching to avoid conflicts)
 if [ "$APP_ENV" = "production" ]; then
     echo "⚡ Optimizing for production..."
     php artisan config:cache
-    php artisan route:cache
-    php artisan view:cache
+    # Skip route:cache and view:cache to avoid deployment conflicts
 fi
 
 # Set proper permissions
