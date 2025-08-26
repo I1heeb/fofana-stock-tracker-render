@@ -21,13 +21,36 @@ class OrderSeeder extends Seeder
             return;
         }
 
-        Order::factory(10)->create()->each(function ($order) use ($products) {
-            // Create 1-3 order items per order
-            OrderItem::factory(rand(1, 3))->create([
-                'order_id' => $order->id,
-                'product_id' => $products->random()->id,
+        // Create sample orders manually (no Faker required)
+        $sampleOrders = [
+            ['status' => 'pending', 'total_amount' => 150.00],
+            ['status' => 'processing', 'total_amount' => 89.50],
+            ['status' => 'shipped', 'total_amount' => 245.75],
+            ['status' => 'delivered', 'total_amount' => 67.25],
+            ['status' => 'pending', 'total_amount' => 198.00],
+        ];
+
+        foreach ($sampleOrders as $orderData) {
+            $order = Order::create([
+                'user_id' => $users->random()->id,
+                'status' => $orderData['status'],
+                'total_amount' => $orderData['total_amount'],
+                'created_at' => now()->subDays(rand(1, 30)),
+                'updated_at' => now()->subDays(rand(0, 5)),
             ]);
-        });
+
+            // Create 1-3 order items per order
+            $itemCount = rand(1, 3);
+            for ($i = 0; $i < $itemCount; $i++) {
+                $product = $products->random();
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $product->id,
+                    'quantity' => rand(1, 5),
+                    'price' => $product->price ?? 25.00,
+                ]);
+            }
+        }
     }
 }
 
