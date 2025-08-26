@@ -50,7 +50,8 @@ RUN mkdir -p /var/www/html/storage/logs \
     && mkdir -p /var/www/html/storage/framework/sessions \
     && mkdir -p /var/www/html/storage/framework/views \
     && mkdir -p /var/www/html/bootstrap/cache \
-    && mkdir -p /var/www/html/public/build
+    && mkdir -p /var/www/html/public/build \
+    && mkdir -p /var/www/html/resources/views/modules/laravelpwa
 
 # Set proper ownership
 RUN chown -R www-data:www-data /var/www/html \
@@ -67,9 +68,8 @@ RUN chmod +x build-assets.sh && ./build-assets.sh
 # Remove dev dependencies after build to reduce image size
 RUN npm prune --production
 
-# Run Laravel setup commands (skip route:cache due to potential conflicts)
-RUN php artisan config:cache \
-    && php artisan view:cache
+# Run Laravel setup commands (skip caching to avoid conflicts during deployment)
+RUN php artisan config:cache
 
 # Configure Apache
 RUN a2enmod rewrite
