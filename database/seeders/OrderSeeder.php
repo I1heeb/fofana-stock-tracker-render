@@ -15,9 +15,10 @@ class OrderSeeder extends Seeder
         $users = User::all();
         $products = Product::all();
 
+        // Skip order creation if no products exist (ProductSeeder should have created them)
         if ($products->isEmpty()) {
-            Product::factory(20)->create();
-            $products = Product::all();
+            $this->command->info('No products found, skipping order creation');
+            return;
         }
 
         Order::factory(10)->create()->each(function ($order) use ($products) {
