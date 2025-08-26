@@ -44,11 +44,25 @@ RUN npm ci
 # Copy the rest of the application
 COPY . .
 
-# Set proper ownership
-RUN chown -R www-data:www-data /var/www/html
+# Create necessary directories and set permissions
+RUN mkdir -p /var/www/html/storage/logs \
+    && mkdir -p /var/www/html/storage/framework/cache \
+    && mkdir -p /var/www/html/storage/framework/sessions \
+    && mkdir -p /var/www/html/storage/framework/views \
+    && mkdir -p /var/www/html/bootstrap/cache \
+    && mkdir -p /var/www/html/public/build
 
-# Build assets
-RUN npm run build
+# Set proper ownership
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage \
+    && chmod -R 755 /var/www/html/bootstrap/cache
+
+# Set environment variables for build
+ENV NODE_ENV=production
+ENV APP_ENV=production
+
+# Make build script executable and run it
+RUN chmod +x build-assets.sh && ./build-assets.sh
 
 # Remove dev dependencies after build to reduce image size
 RUN npm prune --production
