@@ -38,8 +38,8 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 # Copy package.json files for Node dependencies
 COPY package*.json ./
 
-# Install Node dependencies
-RUN npm ci --only=production
+# Install ALL Node dependencies (including dev dependencies for build)
+RUN npm ci
 
 # Copy the rest of the application
 COPY . .
@@ -49,6 +49,9 @@ RUN chown -R www-data:www-data /var/www/html
 
 # Build assets
 RUN npm run build
+
+# Remove dev dependencies after build to reduce image size
+RUN npm prune --production
 
 # Run Laravel setup commands
 RUN php artisan config:cache \
