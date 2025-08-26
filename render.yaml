@@ -1,19 +1,15 @@
 services:
   - type: web
     name: fofana-stock-tracker
-    env: php
+    runtime: docker
     plan: free
-    buildCommand: |
-      composer install --no-dev --optimize-autoloader
-      npm ci
-      npm run build
-      php artisan config:cache
-      php artisan route:cache
-      php artisan view:cache
-    startCommand: |
-      php artisan migrate --force
-      php artisan serve --host=0.0.0.0 --port=$PORT
+    region: oregon
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     envVars:
+      - key: APP_NAME
+        value: "Fofana Stock Tracker"
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
@@ -26,29 +22,26 @@ services:
           name: fofana-stock-tracker
           property: host
       - key: DB_CONNECTION
-        value: pgsql
-      - key: DB_HOST
-        fromDatabase:
-          name: fofana-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: fofana-db
-          property: port
+        value: sqlite
       - key: DB_DATABASE
-        fromDatabase:
-          name: fofana-db
-          property: database
-      - key: DB_USERNAME
-        fromDatabase:
-          name: fofana-db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: fofana-db
-          property: password
+        value: /var/www/html/database/database.sqlite
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: LOG_CHANNEL
+        value: stack
+      - key: LOG_LEVEL
+        value: error
+      - key: SEED_DATABASE
+        value: true
+      - key: PORT
+        value: 80
 
-databases:
-  - name: fofana-db
-    plan: free
-    databaseName: fofana_stock_tracker
+# Optional: PostgreSQL database (commented out since we're using SQLite)
+# databases:
+#   - name: fofana-db
+#     plan: free
+#     databaseName: fofana_stock_tracker
