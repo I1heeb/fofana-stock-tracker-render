@@ -49,8 +49,26 @@ class LogSeeder extends Seeder
             }
         }
 
-        // Add more sample logs
-        Log::factory(20)->create();
+        // Add more sample logs manually (no Faker required)
+        $sampleLogs = [
+            ['action' => 'user_login', 'description' => 'User logged in', 'message' => 'Login successful', 'type' => 'info'],
+            ['action' => 'product_view', 'description' => 'Product viewed', 'message' => 'Product details accessed', 'type' => 'info'],
+            ['action' => 'order_update', 'description' => 'Order status updated', 'message' => 'Order status changed', 'type' => 'success'],
+            ['action' => 'stock_check', 'description' => 'Stock level checked', 'message' => 'Inventory reviewed', 'type' => 'info'],
+            ['action' => 'user_logout', 'description' => 'User logged out', 'message' => 'Session ended', 'type' => 'info'],
+        ];
+
+        foreach ($sampleLogs as $logData) {
+            Log::create([
+                'user_id' => $user ? $user->id : null,
+                'action' => $logData['action'],
+                'description' => $logData['description'],
+                'message' => $logData['message'],
+                'type' => $logData['type'],
+                'created_at' => now()->subDays(rand(1, 10)),
+                'updated_at' => now()->subDays(rand(0, 5)),
+            ]);
+        }
     }
 }
 
