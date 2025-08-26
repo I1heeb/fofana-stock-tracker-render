@@ -3,16 +3,19 @@ set -e
 
 echo "🚀 Starting Laravel application setup..."
 
-# Force SQLite configuration for production deployment
-echo "🔧 Forcing SQLite configuration for deployment..."
+# Force production environment settings
+echo "🔧 Setting production environment..."
+export APP_ENV=production
+export APP_DEBUG=false
 export DB_CONNECTION=sqlite
 export DB_DATABASE=/var/www/html/database/database.sqlite
 
 # Debug environment variables
 echo "🔍 Environment check:"
+echo "APP_ENV: $APP_ENV"
+echo "APP_DEBUG: $APP_DEBUG"
 echo "DB_CONNECTION: $DB_CONNECTION"
 echo "DB_DATABASE: $DB_DATABASE"
-echo "APP_ENV: $APP_ENV"
 
 # Set up SQLite database FIRST (before any database operations)
 echo "📁 Setting up SQLite database..."
@@ -42,6 +45,13 @@ php artisan cache:clear || true
 php artisan route:clear || true
 php artisan view:clear || true
 
+# Set proper file permissions for Laravel
+echo "🔧 Setting proper file permissions..."
+chown -R www-data:www-data /var/www/html
+chmod -R 755 /var/www/html
+chmod -R 775 /var/www/html/storage
+chmod -R 775 /var/www/html/bootstrap/cache
+
 # Generate application key if not set
 if [ -z "$APP_KEY" ]; then
     echo "🔑 Generating application key..."
@@ -59,6 +69,10 @@ php artisan config:show database.default || echo "Config show not available"
 # Test database connection
 echo "🔌 Testing database connection..."
 php artisan migrate:status || echo "Migration status check failed, proceeding anyway..."
+
+# Create a simple health check
+echo "🏥 Creating health check..."
+echo "<?php echo 'Laravel is working! Time: ' . date('Y-m-d H:i:s'); ?>" > /var/www/html/public/health.php
 
 # Run database migrations
 echo "📊 Running database migrations..."
