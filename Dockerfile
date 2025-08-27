@@ -52,12 +52,6 @@ COPY composer.json composer.lock ./
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Copy package.json files for Node dependencies
-COPY package*.json ./
-
-# Install ALL Node dependencies (including dev dependencies for build)
-RUN npm ci
-
 # Copy the rest of the application
 COPY . .
 
