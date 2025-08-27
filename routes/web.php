@@ -19,7 +19,7 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
-    return '<h1>🎉 Fofana Stock Tracker is LIVE!</h1><p>Laravel is working perfectly!</p><p>Time: ' . date('Y-m-d H:i:s') . '</p><p><a href="/login">Go to Login</a></p>';
+    return redirect('/login');
 });
 
 Route::middleware('auth')->group(function () {
