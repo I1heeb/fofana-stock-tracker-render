@@ -1,4 +1,23 @@
-# Use PHP 8.4 with Apache for better compatibility
+# ---- Node build stage ----
+FROM node:18-alpine AS nodebuild
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install dependencies
+RUN npm ci --only=production=false
+
+# Copy source files needed for build
+COPY resources ./resources
+COPY vite.config.js ./
+COPY tailwind.config.js ./
+COPY postcss.config.js ./
+
+# Build assets
+RUN npm run build
+
+# ---- PHP/Apache stage ----
 FROM php:8.4-apache
 
 # Install system dependencies
@@ -11,8 +30,6 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     unzip \
-    nodejs \
-    npm \
     postgresql-client \
     libpq-dev \
     sqlite3 \
@@ -44,31 +61,31 @@ RUN npm ci
 # Copy the rest of the application
 COPY . .
 
+# Copy built assets from node stage
+COPY --from=nodebuild /app/public/build ./public/build
+
+# Install Composer dependencies
+RUN composer install --no-dev --optimize-autoloader
+
 # Create necessary directories and set permissions
 RUN mkdir -p /var/www/html/storage/logs \
     && mkdir -p /var/www/html/storage/framework/cache \
     && mkdir -p /var/www/html/storage/framework/sessions \
     && mkdir -p /var/www/html/storage/framework/views \
     && mkdir -p /var/www/html/bootstrap/cache \
-    && mkdir -p /var/www/html/public/build \
     && mkdir -p /var/www/html/resources/views/modules/laravelpwa
 
-# Set proper ownership
+# Set proper ownership and permissions for built assets
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+    && chmod -R 755 /var/www/html/bootstrap/cache \
+    && chmod -R 755 /var/www/html/public/build
 
-# Set environment variables for build and runtime
-ENV NODE_ENV=production
+# Set environment variables for runtime
 ENV APP_ENV=production
+ENV APP_DEBUG=false
 ENV DB_CONNECTION=sqlite
 ENV DB_DATABASE=/var/www/html/database/database.sqlite
-
-# Make build script executable and run it
-RUN chmod +x build-assets.sh && ./build-assets.sh
-
-# Remove dev dependencies after build to reduce image size
-RUN npm prune --production
 
 # Run Laravel setup commands (minimal caching for deployment stability)
 RUN php artisan config:cache

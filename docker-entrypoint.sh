@@ -46,6 +46,15 @@ php artisan cache:clear || true
 php artisan route:clear || true
 php artisan view:clear || true
 
+# Verify built assets exist
+echo "🔍 Checking built assets..."
+if [ -f "/var/www/html/public/build/manifest.json" ]; then
+    echo "✅ Vite manifest found"
+    ls -la /var/www/html/public/build/
+else
+    echo "❌ Vite manifest missing - assets may not load properly"
+fi
+
 # Set proper file permissions for Laravel
 echo "🔧 Setting proper file permissions..."
 chown -R www-data:www-data /var/www/html
@@ -68,9 +77,11 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
 
-# Force create a fresh config cache with our SQLite settings
+# Force create fresh caches with our production settings
 echo "🔧 Creating fresh configuration cache..."
 php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 
 # Verify database configuration before migration
 echo "🔍 Verifying database configuration..."

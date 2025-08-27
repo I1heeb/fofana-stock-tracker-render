@@ -51,7 +51,7 @@ tests/
 # Build artifacts
 /public/hot
 /public/storage
-/public/build
+# Note: /public/build is needed for production assets, so not excluded
 
 # Temporary files
 *.tmp
