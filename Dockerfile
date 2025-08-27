@@ -6,9 +6,10 @@ WORKDIR /app
 COPY package.json ./
 COPY package-lock.json* ./
 
-# Clean npm cache and install dependencies
+# Clean npm cache and install dependencies with Rollup native binaries
 RUN npm cache clean --force && \
-    npm install --no-optional --no-audit
+    npm install --no-optional --no-audit && \
+    npm install @rollup/rollup-linux-x64-gnu --save-dev
 
 # Copy source files needed for build
 COPY resources ./resources
@@ -16,7 +17,8 @@ COPY vite.config.js ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
 
-# Build assets
+# Build assets (force Rollup to use JS fallback if native fails)
+ENV ROLLUP_NO_NATIVE=1
 RUN npm run build
 
 # ---- PHP/Apache stage ----
