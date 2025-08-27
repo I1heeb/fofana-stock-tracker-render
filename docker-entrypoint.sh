@@ -42,7 +42,7 @@ rm -rf /var/www/html/bootstrap/cache/config.php || true
 rm -rf /var/www/html/bootstrap/cache/services.php || true
 rm -rf /var/www/html/bootstrap/cache/packages.php || true
 php artisan config:clear || true
-php artisan cache:clear || true
+php artisan cache:clear 2>/dev/null || echo "Cache clear skipped (no cache table)"
 php artisan route:clear || true
 php artisan view:clear || true
 
