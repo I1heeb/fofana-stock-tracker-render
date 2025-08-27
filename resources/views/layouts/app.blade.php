@@ -12,6 +12,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- DEBUG: Show what Vite is generating -->
+    @if(app()->environment('production'))
+        <!-- Production asset debugging -->
+        <script>
+            console.log('Vite assets should be loading...');
+            console.log('Manifest exists:', {{ file_exists(public_path('build/manifest.json')) ? 'true' : 'false' }});
+        </script>
+    @endif
 </head>
 <body class="font-inter antialiased bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
     <div class="flex h-screen bg-gray-50">
