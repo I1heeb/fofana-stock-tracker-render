@@ -7,6 +7,7 @@ echo "🚀 Starting Laravel application setup..."
 echo "🔧 Setting production environment..."
 export APP_ENV=production
 export APP_DEBUG=false
+export APP_KEY=base64:frICryS59HOmaoUtF03WgnrpFhnJSnkQlGROjzaePUI=
 export DB_CONNECTION=sqlite
 export DB_DATABASE=/var/www/html/database/database.sqlite
 
@@ -49,8 +50,17 @@ php artisan view:clear || true
 echo "🔧 Setting proper file permissions..."
 chown -R www-data:www-data /var/www/html
 chmod -R 755 /var/www/html
-chmod -R 775 /var/www/html/storage
-chmod -R 775 /var/www/html/bootstrap/cache
+chmod -R 777 /var/www/html/storage
+chmod -R 777 /var/www/html/bootstrap/cache
+chmod -R 777 /var/www/html/database
+
+# Create required directories if they don't exist
+mkdir -p /var/www/html/storage/logs
+mkdir -p /var/www/html/storage/framework/cache
+mkdir -p /var/www/html/storage/framework/sessions
+mkdir -p /var/www/html/storage/framework/views
+chmod -R 777 /var/www/html/storage/logs
+chmod -R 777 /var/www/html/storage/framework
 
 # Generate application key if not set
 if [ -z "$APP_KEY" ]; then
@@ -73,6 +83,35 @@ php artisan migrate:status || echo "Migration status check failed, proceeding an
 # Create a simple health check
 echo "🏥 Creating health check..."
 echo "<?php echo 'Laravel is working! Time: ' . date('Y-m-d H:i:s'); ?>" > /var/www/html/public/health.php
+
+# Create a Laravel debug endpoint
+echo "🔍 Creating Laravel debug endpoint..."
+cat > /var/www/html/public/debug.php << 'EOF'
+<?php
+echo "<h1>Laravel Debug Info</h1>";
+echo "<p><strong>PHP Version:</strong> " . phpversion() . "</p>";
+echo "<p><strong>APP_KEY:</strong> " . (getenv('APP_KEY') ?: 'NOT SET') . "</p>";
+echo "<p><strong>APP_ENV:</strong> " . (getenv('APP_ENV') ?: 'NOT SET') . "</p>";
+echo "<p><strong>APP_DEBUG:</strong> " . (getenv('APP_DEBUG') ?: 'NOT SET') . "</p>";
+echo "<p><strong>DB_CONNECTION:</strong> " . (getenv('DB_CONNECTION') ?: 'NOT SET') . "</p>";
+echo "<p><strong>Storage writable:</strong> " . (is_writable('/var/www/html/storage') ? 'YES' : 'NO') . "</p>";
+echo "<p><strong>Bootstrap cache writable:</strong> " . (is_writable('/var/www/html/bootstrap/cache') ? 'YES' : 'NO') . "</p>";
+echo "<p><strong>Database exists:</strong> " . (file_exists('/var/www/html/database/database.sqlite') ? 'YES' : 'NO') . "</p>";
+
+// Try to load Laravel
+try {
+    require_once '/var/www/html/vendor/autoload.php';
+    $app = require_once '/var/www/html/bootstrap/app.php';
+    echo "<p><strong>Laravel Bootstrap:</strong> SUCCESS</p>";
+
+    $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+    echo "<p><strong>Kernel Creation:</strong> SUCCESS</p>";
+} catch (Exception $e) {
+    echo "<p><strong>Laravel Error:</strong> " . $e->getMessage() . "</p>";
+    echo "<p><strong>File:</strong> " . $e->getFile() . ":" . $e->getLine() . "</p>";
+}
+?>
+EOF
 
 # Run database migrations
 echo "📊 Running database migrations..."
