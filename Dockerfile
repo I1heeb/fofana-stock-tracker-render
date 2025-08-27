@@ -3,10 +3,12 @@ FROM node:18-alpine AS nodebuild
 WORKDIR /app
 
 # Copy package files
-COPY package.json package-lock.json ./
+COPY package.json ./
+COPY package-lock.json* ./
 
-# Install dependencies (including dev dependencies for build)
-RUN npm ci
+# Clean npm cache and install dependencies
+RUN npm cache clean --force && \
+    npm install --no-optional --no-audit
 
 # Copy source files needed for build
 COPY resources ./resources
