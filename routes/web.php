@@ -109,12 +109,12 @@ Route::get('/csrf-token', function () {
 // Route spéciale pour le dashboard admin de Nour
 Route::get('/admin/nour-dashboard', function () {
     // Vérifier que l'utilisateur est bien Nour Admin
-    if (auth()->check() && auth()->user()->email === 'nour@admin.com') {
+    if (auth()->check() && auth()->user()->email === 'nour@gmail.com') {
         return view('admin.nour-dashboard');
     }
 
-    // Rediriger vers le dashboard normal si ce n'est pas Nour
-    return redirect()->route('dashboard');
+    // Rediriger vers le dashboard admin si ce n'est pas Nour
+    return redirect()->route('admin.dashboard');
 })->middleware('auth')->name('admin.nour.dashboard');
 
 // Route AJAX pour la recherche de produits dans les commandes
@@ -155,9 +155,17 @@ Route::post('/emergency-login', function (Request $request) {
     if (Auth::attempt($credentials, $request->boolean('remember'))) {
         $request->session()->regenerate();
 
-        // Redirection spéciale pour Nour Admin
-        if (Auth::user()->email === 'nour@admin.com') {
+        // Redirection spéciale pour les admins
+        $user = Auth::user();
+
+        // Nour Admin gets special dashboard
+        if ($user->email === 'nour@gmail.com') {
             return redirect()->intended(route('admin.nour.dashboard'));
+        }
+
+        // Other admins get admin dashboard
+        if (in_array($user->email, ['iheb@admin.com', 'aaaa@dev.com']) || $user->role === 'admin') {
+            return redirect()->intended(route('admin.dashboard'));
         }
 
         return redirect()->intended(route('dashboard'));
