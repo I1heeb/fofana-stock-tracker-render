@@ -87,9 +87,12 @@ ENV DB_DATABASE=/var/www/html/database/database.sqlite
 
 # Note: Laravel caches moved to entrypoint (after env vars are available)
 
-# Configure Apache
+# Configure Apache with Render port binding
 RUN a2enmod rewrite
 COPY .docker/vhost.conf /etc/apache2/sites-available/000-default.conf
+
+# Configure Apache to listen on PORT environment variable (for Render)
+RUN echo "Listen \${PORT:-80}" > /etc/apache2/ports.conf
 
 # Set proper permissions for Laravel
 RUN chown -R www-data:www-data /var/www/html \
