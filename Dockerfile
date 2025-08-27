@@ -81,8 +81,7 @@ ENV APP_DEBUG=false
 ENV DB_CONNECTION=sqlite
 ENV DB_DATABASE=/var/www/html/database/database.sqlite
 
-# Run Laravel setup commands (minimal caching for deployment stability)
-RUN php artisan config:cache
+# Note: Laravel caches moved to entrypoint (after env vars are available)
 
 # Configure Apache
 RUN a2enmod rewrite
