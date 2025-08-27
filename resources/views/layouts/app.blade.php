@@ -10,8 +10,14 @@
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
-    
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    @if (file_exists(public_path('build/manifest.json')))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <!-- Fallback: Load assets directly -->
+        <link rel="stylesheet" href="{{ asset('build/assets/app-DAAGVhe3.css') }}">
+        <script src="{{ asset('build/assets/app-CyhlAEfu.js') }}" defer></script>
+    @endif
 </head>
 <body class="font-inter antialiased bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
     <div class="flex h-screen bg-gray-50">
