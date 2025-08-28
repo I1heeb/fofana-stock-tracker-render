@@ -1060,6 +1060,30 @@ Route::get('/debug/show-exact-error', function () {
     }
 }); // NO MIDDLEWARE
 
+// ULTRA BASIC TEST - JUST HTML
+Route::get('/debug/ultra-basic', function () {
+    return '<h1>ULTRA BASIC TEST</h1><p>If you see this, basic routing works</p><p>Time: ' . now() . '</p>';
+});
+
+// TEST IF USER MODEL WORKS
+Route::get('/debug/test-user-model', function () {
+    try {
+        $count = \App\Models\User::count();
+        return '<h1>USER MODEL TEST</h1><p>User count: ' . $count . '</p><p>Model works!</p>';
+    } catch (\Exception $e) {
+        return '<h1>USER MODEL FAILED</h1><p>Error: ' . $e->getMessage() . '</p>';
+    }
+});
+
+// TEST IF VIEW SYSTEM WORKS
+Route::get('/debug/test-view-system', function () {
+    try {
+        return view('debug.minimal-users', ['users' => collect()]);
+    } catch (\Exception $e) {
+        return '<h1>VIEW SYSTEM FAILED</h1><p>Error: ' . $e->getMessage() . '</p>';
+    }
+});
+
 // MINIMAL USERS TEST - NO FANCY STUFF
 Route::get('/debug/minimal-users-test', function () {
     try {
