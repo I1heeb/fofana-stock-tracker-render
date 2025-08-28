@@ -57,11 +57,13 @@ Route::middleware(['auth'])->group(function () {
     // Products - Accès selon le rôle
     // Routes spécifiques AVANT la route resource
     Route::get('/products/low-stock', [ProductController::class, 'lowStock'])->name('products.low-stock');
+    Route::get('/products/export', [ProductController::class, 'export'])->name('products.export');
     Route::patch('products/{product}/adjust-stock', [ProductController::class, 'adjustStock'])->name('products.adjust-stock');
     Route::resource('products', ProductController::class);
 
     // Orders - Accès selon le rôle
     Route::get('/orders/pending', [OrderController::class, 'pending'])->name('orders.pending');
+    Route::get('/orders/export', [OrderController::class, 'export'])->name('orders.export');
     Route::resource('orders', OrderController::class);
     Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
 
@@ -79,6 +81,11 @@ Route::middleware(['auth'])->group(function () {
 
 
 require __DIR__.'/auth.php';
+
+// Fix logout 419 error - redirect to login on session expiry
+Route::get('/logout', function () {
+    return redirect()->route('login')->with('message', 'You have been logged out.');
+})->name('logout.get');
 
 // Route de diagnostic CSRF (temporaire)
 Route::get('/csrf-status', function () {

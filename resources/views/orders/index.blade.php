@@ -155,6 +155,13 @@
                     >
                         🔄 Reset
                     </a>
+                    <button
+                        type="button"
+                        onclick="exportOrders()"
+                        class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
+                    >
+                        📊 Export Excel
+                    </button>
                     @if(isset($orders) && $orders->count() > 0)
                         <button
                             type="button"
@@ -350,5 +357,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Export function
+function exportOrders() {
+    const form = document.querySelector('form');
+    const formData = new FormData(form);
+    const params = new URLSearchParams(formData);
+
+    window.location.href = '{{ route("orders.export") }}?' + params.toString();
+}
 </script>
 

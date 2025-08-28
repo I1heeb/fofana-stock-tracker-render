@@ -13,6 +13,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\StreamedResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Exports\OrdersExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class OrderController extends Controller
 {
@@ -371,6 +373,17 @@ class OrderController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
+    /**
+     * Export orders to Excel
+     */
+    public function export(Request $request)
+    {
+        $filters = $request->only(['search', 'user_id', 'status', 'date_from', 'date_to']);
+
+        $filename = 'orders_export_' . now()->format('Y-m-d') . '.xlsx';
+
+        return Excel::download(new OrdersExport($filters), $filename);
+    }
 
 }
 

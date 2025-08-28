@@ -51,8 +51,31 @@ class AdminController extends Controller
      */
     public function products()
     {
-        $products = Product::paginate(20);
-        return view('admin.products', compact('products'));
+        try {
+            \Log::info('AdminController::products - Starting method');
+
+            $products = Product::paginate(20);
+            \Log::info('AdminController::products - Products loaded', ['count' => $products->count()]);
+
+            \Log::info('AdminController::products - Attempting to load view: admin.products');
+            return view('admin.products', compact('products'));
+
+        } catch (\Exception $e) {
+            \Log::error('AdminController::products - Error occurred', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Return a simple response for debugging
+            return response()->json([
+                'error' => 'Admin products error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
+        }
     }
 
     /**
@@ -60,8 +83,30 @@ class AdminController extends Controller
      */
     public function orders()
     {
-        $orders = Order::with('user')->latest()->paginate(20);
-        return view('admin.orders', compact('orders'));
+        try {
+            \Log::info('AdminController::orders - Starting method');
+
+            $orders = Order::with('user')->latest()->paginate(20);
+            \Log::info('AdminController::orders - Orders loaded', ['count' => $orders->count()]);
+
+            \Log::info('AdminController::orders - Attempting to load view: admin.orders');
+            return view('admin.orders', compact('orders'));
+
+        } catch (\Exception $e) {
+            \Log::error('AdminController::orders - Error occurred', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Admin orders error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
+        }
     }
 
     /**
@@ -69,36 +114,58 @@ class AdminController extends Controller
      */
     public function reports()
     {
-        $reports = [
-            'daily_sales' => Order::whereDate('created_at', today())
-                ->where('status', 'completed')
-                ->sum('total_amount') ?? 0,
-            'weekly_sales' => Order::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])
-                ->where('status', 'completed')
-                ->sum('total_amount') ?? 0,
-            'monthly_sales' => Order::whereMonth('created_at', now()->month)
-                ->whereYear('created_at', now()->year)
-                ->where('status', 'completed')
-                ->sum('total_amount') ?? 0,
-            'top_products' => DB::table('order_items')
-                ->join('products', 'order_items.product_id', '=', 'products.id')
-                ->join('orders', 'order_items.order_id', '=', 'orders.id')
-                ->where('orders.status', 'completed')
-                ->select('products.name', 'products.sku', DB::raw('SUM(order_items.quantity) as total_sold'))
-                ->groupBy('products.id', 'products.name', 'products.sku')
-                ->orderBy('total_sold', 'desc')
-                ->take(10)
-                ->get(),
-        ];
+        try {
+            \Log::info('AdminController::reports - Starting method');
 
-        // Add additional statistics
-        $reports['total_orders'] = Order::count();
-        $reports['completed_orders'] = Order::where('status', 'completed')->count();
-        $reports['pending_orders'] = Order::where('status', 'pending')->count();
-        $reports['total_products'] = Product::count();
-        $reports['low_stock_products'] = Product::whereRaw('stock_quantity <= low_stock_threshold')->count();
+            $reports = [
+                'daily_sales' => Order::whereDate('created_at', today())
+                    ->where('status', 'completed')
+                    ->sum('total_amount') ?? 0,
+                'weekly_sales' => Order::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])
+                    ->where('status', 'completed')
+                    ->sum('total_amount') ?? 0,
+                'monthly_sales' => Order::whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year)
+                    ->where('status', 'completed')
+                    ->sum('total_amount') ?? 0,
+                'top_products' => DB::table('order_items')
+                    ->join('products', 'order_items.product_id', '=', 'products.id')
+                    ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                    ->where('orders.status', 'completed')
+                    ->select('products.name', 'products.sku', DB::raw('SUM(order_items.quantity) as total_sold'))
+                    ->groupBy('products.id', 'products.name', 'products.sku')
+                    ->orderBy('total_sold', 'desc')
+                    ->take(10)
+                    ->get(),
+            ];
 
-        return view('admin.reports', compact('reports'));
+            // Add additional statistics
+            $reports['total_orders'] = Order::count();
+            $reports['completed_orders'] = Order::where('status', 'completed')->count();
+            $reports['pending_orders'] = Order::where('status', 'pending')->count();
+            $reports['total_products'] = Product::count();
+            $reports['low_stock_products'] = Product::whereRaw('stock_quantity <= low_stock_threshold')->count();
+
+            \Log::info('AdminController::reports - Reports data compiled', ['reports_keys' => array_keys($reports)]);
+
+            \Log::info('AdminController::reports - Attempting to load view: admin.reports');
+            return view('admin.reports', compact('reports'));
+
+        } catch (\Exception $e) {
+            \Log::error('AdminController::reports - Error occurred', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Admin reports error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
+        }
     }
 
     /**

@@ -8,6 +8,8 @@ use App\Models\StockHistory;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use App\Exports\ProductsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
@@ -272,6 +274,18 @@ class ProductController extends Controller
         $actionText = $adjustment > 0 ? 'rechargé' : 'réduit';
         return redirect()->back()
             ->with('success', "✅ Stock {$actionText} avec succès! {$oldStock} → {$product->stock_quantity}");
+    }
+
+    /**
+     * Export products to Excel
+     */
+    public function export(Request $request)
+    {
+        $filters = $request->only(['search', 'stock_status', 'price_min', 'price_max', 'date_from', 'date_to']);
+
+        $filename = 'products_export_' . now()->format('Y-m-d') . '.xlsx';
+
+        return Excel::download(new ProductsExport($filters), $filename);
     }
 }
 

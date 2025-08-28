@@ -138,6 +138,13 @@
                     >
                         🔄 Clear All Filters
                     </a>
+                    <button
+                        type="button"
+                        onclick="exportProducts()"
+                        class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
+                    >
+                        📊 Export Excel
+                    </button>
                 </div>
 
                 @if(request()->hasAny(['search', 'stock_status', 'date_from', 'date_to', 'price_min', 'price_max']))
@@ -167,6 +174,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Export function
+function exportProducts() {
+    const form = document.querySelector('form');
+    const formData = new FormData(form);
+    const params = new URLSearchParams(formData);
+
+    window.location.href = '{{ route("products.export") }}?' + params.toString();
+}
 </script>
 
     @if(isset($error))
