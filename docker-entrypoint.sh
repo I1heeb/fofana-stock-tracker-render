@@ -11,6 +11,10 @@ export APP_KEY=base64:frICryS59HOmaoUtF03WgnrpFhnJSnkQlGROjzaePUI=
 export DB_CONNECTION=sqlite
 export DB_DATABASE=/var/www/html/database/database.sqlite
 
+# Force HTTPS for all URLs (fix mixed content on Render)
+export FORCE_HTTPS=true
+export APP_URL=https://fofana-stock-tracker-render.onrender.com
+
 # Debug environment variables
 echo "🔍 Environment check:"
 echo "APP_ENV: $APP_ENV"
