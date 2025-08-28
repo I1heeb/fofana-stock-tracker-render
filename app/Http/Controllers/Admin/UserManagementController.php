@@ -12,13 +12,44 @@ class UserManagementController extends Controller
 {
     public function index()
     {
-        // Check admin access
-        if (!auth()->user()->isAdmin()) {
-            abort(403, 'Access denied. Admin privileges required.');
+        try {
+            \Log::info('UserManagementController::index - Starting method');
+
+            // Check admin access
+            if (!auth()->user()->isAdmin()) {
+                \Log::warning('UserManagementController::index - Access denied', [
+                    'user_id' => auth()->id(),
+                    'user_role' => auth()->user()->role,
+                    'is_admin' => auth()->user()->isAdmin()
+                ]);
+                abort(403, 'Access denied. Admin privileges required.');
+            }
+
+            \Log::info('UserManagementController::index - Admin access confirmed');
+
+            $users = User::latest()->paginate(15);
+            \Log::info('UserManagementController::index - Users loaded', ['count' => $users->count()]);
+
+            \Log::info('UserManagementController::index - Attempting to load view: admin.users.index');
+            return view('admin.users.index', compact('users'));
+
+        } catch (\Exception $e) {
+            \Log::error('UserManagementController::index - Error occurred', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'controller' => 'UserManagementController',
+                'method' => 'index'
+            ], 500);
         }
-        
-        $users = User::latest()->paginate(15);
-        return view('admin.users.index', compact('users'));
     }
 
     public function create()

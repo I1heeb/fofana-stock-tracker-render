@@ -881,6 +881,88 @@ Route::get('/debug/admin-dashboard', function () {
     return view('debug.admin');
 })->middleware('auth')->name('debug.admin');
 
+// Debug UserManagementController specifically
+Route::get('/debug/user-management-test', function () {
+    try {
+        \Log::info('UserManagementController debug test started');
+
+        // Test the exact same logic as UserManagementController::index()
+        if (!auth()->user()->isAdmin()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not admin',
+                'user_role' => auth()->user()->role,
+                'is_admin' => auth()->user()->isAdmin()
+            ], 403);
+        }
+
+        $users = \App\Models\User::latest()->paginate(15);
+
+        \Log::info('Users loaded successfully', ['count' => $users->count()]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'UserManagementController logic works',
+            'users_count' => $users->count(),
+            'total_users' => $users->total(),
+            'sample_user' => $users->first() ? [
+                'id' => $users->first()->id,
+                'name' => $users->first()->name,
+                'email' => $users->first()->email,
+                'role' => $users->first()->role
+            ] : null
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('UserManagementController debug test failed', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'controller' => 'UserManagementController debug'
+        ], 500);
+    }
+})->middleware('auth');
+
+// Test the actual view rendering
+Route::get('/debug/user-management-view-test', function () {
+    try {
+        \Log::info('UserManagementController view test started');
+
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Access denied. Admin privileges required.');
+        }
+
+        $users = \App\Models\User::latest()->paginate(15);
+
+        \Log::info('About to render admin.users.index view');
+        return view('admin.users.index', compact('users'));
+
+    } catch (\Exception $e) {
+        \Log::error('UserManagementController view test failed', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'view' => 'admin.users.index'
+        ], 500);
+    }
+})->middleware(['auth', 'role:admin']);
+
 // Simple admin products test without middleware
 Route::get('/debug/simple-admin-products', function () {
     try {
