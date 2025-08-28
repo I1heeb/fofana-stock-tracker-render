@@ -14,6 +14,8 @@ class UserManagementController extends Controller
     {
         try {
             \Log::info('UserManagementController::index - Starting method');
+            \Log::info('UserManagementController::index - Memory usage', ['memory' => memory_get_usage(true)]);
+            \Log::info('UserManagementController::index - Execution time', ['time' => microtime(true)]);
 
             // Check admin access
             if (!auth()->user()->isAdmin()) {

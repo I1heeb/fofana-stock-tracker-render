@@ -36,8 +36,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
 });
 
-// ADMIN ONLY - Admin Panel (user management) - Seul l'admin a accès
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+// ADMIN ONLY - Admin Panel (user management) - Use same middleware as other admin routes
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('users', App\Http\Controllers\Admin\UserManagementController::class);
     Route::post('users/{user}/toggle-status', [App\Http\Controllers\Admin\UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::patch('users/{user}/update-role', [App\Http\Controllers\Admin\UserManagementController::class, 'updateRole'])->name('users.update-role');
@@ -959,6 +959,64 @@ Route::get('/debug/user-management-view-test', function () {
             'file' => $e->getFile(),
             'line' => $e->getLine(),
             'view' => 'admin.users.index'
+        ], 500);
+    }
+})->middleware(['auth', 'role:admin']);
+
+// BYPASS ALL MIDDLEWARE TEST - DANGEROUS BUT FOR DEBUGGING
+Route::get('/debug/bypass-users-test', function () {
+    try {
+        \Log::info('BYPASS USERS TEST - Starting (NO MIDDLEWARE)');
+
+        $users = \App\Models\User::latest()->paginate(15);
+
+        \Log::info('BYPASS USERS TEST - Users loaded', ['count' => $users->count()]);
+
+        // Try the actual problematic view
+        return view('admin.users.index', compact('users'));
+
+    } catch (\Exception $e) {
+        \Log::error('BYPASS USERS TEST - Failed', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'error' => 'BYPASS TEST FAILED',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => explode("\n", $e->getTraceAsString())
+        ], 500);
+    }
+}); // NO MIDDLEWARE AT ALL
+
+// MINIMAL USERS TEST - NO FANCY STUFF
+Route::get('/debug/minimal-users-test', function () {
+    try {
+        \Log::info('MINIMAL USERS TEST - Starting');
+
+        $users = \App\Models\User::latest()->paginate(15);
+
+        \Log::info('MINIMAL USERS TEST - Users loaded', ['count' => $users->count()]);
+
+        return view('debug.minimal-users', compact('users'));
+
+    } catch (\Exception $e) {
+        \Log::error('MINIMAL USERS TEST - Failed', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'error' => 'MINIMAL TEST FAILED',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
         ], 500);
     }
 })->middleware(['auth', 'role:admin']);
