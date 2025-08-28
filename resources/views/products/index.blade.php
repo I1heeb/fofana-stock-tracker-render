@@ -25,23 +25,23 @@
 
 <!-- Advanced Product Search -->
 <div class="modern-card p-6 mb-6">
-    <!-- Bootstrap Collapse Header -->
+    <!-- Collapse Header -->
     <div class="mb-4">
-        <button class="btn btn-link text-decoration-none p-0 d-flex align-items-center w-100 text-start" 
-                type="button" 
-                data-bs-toggle="collapse" 
-                data-bs-target="#productSearchFilters" 
-                aria-expanded="true" 
+        <button class="flex items-center w-full text-left p-0 bg-transparent border-none focus:outline-none"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#productSearchFilters"
+                aria-expanded="true"
                 aria-controls="productSearchFilters">
-            <svg class="h-5 w-5 text-blue-600 me-2 transition-transform" id="productFilterIcon" style="transform: rotate(180deg);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="h-5 w-5 text-blue-600 mr-2 transition-transform" id="productFilterIcon" style="transform: rotate(180deg);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
-            <h3 class="text-lg font-semibold text-navy-900 mb-0">🔍 Product Search & Filters</h3>
+            <h3 class="text-lg font-semibold text-navy-900">🔍 Product Search & Filters</h3>
         </button>
     </div>
     
     <!-- Collapsible Content -->
-    <div class="collapse show" id="productSearchFilters">
+    <div class="collapse show" id="productSearchFilters" style="min-height: 50px; border: 1px solid #e5e7eb; background: #f9fafb;">
         <form method="GET" action="{{ route('products.index') }}" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Name/SKU Search -->

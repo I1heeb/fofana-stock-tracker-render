@@ -33,23 +33,23 @@
     
     <!-- Search Filters -->
     <div class="modern-card p-6">
-        <!-- Bootstrap Collapse Header -->
+        <!-- Collapse Header -->
         <div class="mb-4">
-            <button class="btn btn-link text-decoration-none p-0 d-flex align-items-center w-100 text-start" 
-                    type="button" 
-                    data-bs-toggle="collapse" 
-                    data-bs-target="#searchFilters" 
-                    aria-expanded="true" 
+            <button class="flex items-center w-full text-left p-0 bg-transparent border-none focus:outline-none"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#searchFilters"
+                    aria-expanded="true"
                     aria-controls="searchFilters">
-                <svg class="h-5 w-5 text-blue-600 me-2 transition-transform" id="filterIcon" style="transform: rotate(180deg);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-5 w-5 text-blue-600 mr-2 transition-transform" id="filterIcon" style="transform: rotate(180deg);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
-                <h3 class="text-lg font-semibold text-navy-900 mb-0">🔍 Search Filters</h3>
+                <h3 class="text-lg font-semibold text-navy-900">🔍 Search Filters</h3>
             </button>
         </div>
         
         <!-- Collapsible Content -->
-        <div class="collapse show" id="searchFilters">
+        <div class="collapse show" id="searchFilters" style="min-height: 50px; border: 1px solid #e5e7eb; background: #f9fafb;">
             <form method="GET" action="{{ route('orders.index') }}" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                     <!-- Order Number Search -->

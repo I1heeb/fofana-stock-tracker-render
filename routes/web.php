@@ -787,7 +787,7 @@ Route::get('/test-product-view', function () {
 Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::get('/', [App\Http\Controllers\AdminController::class, 'dashboard'])->name('index');
     Route::get('/dashboard', [App\Http\Controllers\AdminController::class, 'dashboard'])->name('dashboard');
-    Route::get('/users', [App\Http\Controllers\AdminController::class, 'users'])->name('users');
+    // Route::get('/users', [App\Http\Controllers\AdminController::class, 'users'])->name('users'); // REMOVED - conflicts with resource route
     Route::get('/products', [App\Http\Controllers\AdminController::class, 'products'])->name('products');
     Route::get('/orders', [App\Http\Controllers\AdminController::class, 'orders'])->name('orders');
     Route::get('/reports', [App\Http\Controllers\AdminController::class, 'reports'])->name('reports');

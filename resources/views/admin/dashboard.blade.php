@@ -89,7 +89,7 @@
     <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">🚀 Quick Actions</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <a href="{{ route('admin.users') }}" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+            <a href="{{ route('admin.users.index') }}" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
                 <span class="text-2xl mr-3">👥</span>
                 <div>
                     <p class="font-medium text-blue-900">Manage Users</p>
