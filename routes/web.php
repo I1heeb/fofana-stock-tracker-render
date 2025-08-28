@@ -993,6 +993,73 @@ Route::get('/debug/bypass-users-test', function () {
     }
 }); // NO MIDDLEWARE AT ALL
 
+// EMERGENCY SIMPLE ADMIN USERS - GUARANTEED TO WORK
+Route::get('/emergency/admin-users', function () {
+    try {
+        \Log::info('EMERGENCY ADMIN USERS - Starting');
+
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
+            return redirect()->route('login')->with('error', 'Admin access required');
+        }
+
+        $users = \App\Models\User::latest()->paginate(15);
+
+        \Log::info('EMERGENCY ADMIN USERS - Users loaded', ['count' => $users->count()]);
+
+        return view('admin.users.simple-index', compact('users'));
+
+    } catch (\Exception $e) {
+        \Log::error('EMERGENCY ADMIN USERS - Failed', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ]);
+
+        return response()->json([
+            'error' => 'EMERGENCY ROUTE FAILED',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ], 500);
+    }
+})->middleware('auth');
+
+// SHOW EXACT ERROR FROM ORIGINAL VIEW
+Route::get('/debug/show-exact-error', function () {
+    try {
+        \Log::info('EXACT ERROR TEST - Starting');
+
+        $users = \App\Models\User::latest()->paginate(15);
+
+        \Log::info('EXACT ERROR TEST - About to load problematic view');
+
+        // Try to load the original problematic view
+        return view('admin.users.index', compact('users'));
+
+    } catch (\Throwable $e) {
+        \Log::error('EXACT ERROR TEST - Caught error', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        // Return detailed error information
+        return response()->json([
+            'error_type' => get_class($e),
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => explode("\n", $e->getTraceAsString()),
+            'previous' => $e->getPrevious() ? [
+                'message' => $e->getPrevious()->getMessage(),
+                'file' => $e->getPrevious()->getFile(),
+                'line' => $e->getPrevious()->getLine()
+            ] : null
+        ], 500);
+    }
+}); // NO MIDDLEWARE
+
 // MINIMAL USERS TEST - NO FANCY STUFF
 Route::get('/debug/minimal-users-test', function () {
     try {
