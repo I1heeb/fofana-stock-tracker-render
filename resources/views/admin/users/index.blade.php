@@ -113,7 +113,7 @@
                                                 <form action="{{ route('admin.users.remove-super-admin', $user) }}" method="POST" class="inline">
                                                     @csrf
                                                     <button type="submit"
-                                                            onclick="return confirm('Remove super admin privileges from {{ $user->name }}?')"
+                                                            onclick="return confirm('Remove super admin privileges from ' + {{ json_encode($user->name) }} + '?')"
                                                             class="text-orange-600 hover:text-orange-800 px-2 py-1 text-xs rounded-md hover:bg-orange-100 transition-all">
                                                         👑➖ Remove Super Admin
                                                     </button>
@@ -122,7 +122,7 @@
                                                 <form action="{{ route('admin.users.make-super-admin', $user) }}" method="POST" class="inline">
                                                     @csrf
                                                     <button type="submit"
-                                                            onclick="return confirm('Make {{ $user->name }} a super admin?')"
+                                                            onclick="return confirm('Make ' + {{ json_encode($user->name) }} + ' a super admin?')"
                                                             class="text-purple-600 hover:text-purple-800 px-2 py-1 text-xs rounded-md hover:bg-purple-100 transition-all">
                                                         👑➕ Make Super Admin
                                                     </button>
