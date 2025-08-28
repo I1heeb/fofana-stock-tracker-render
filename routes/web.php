@@ -87,6 +87,72 @@ Route::get('/logout', function () {
     return redirect()->route('login')->with('message', 'You have been logged out.');
 })->name('logout.get');
 
+// DEBUG ROUTES - Remove after fixing admin issues
+Route::get('/debug/admin-test', function () {
+    try {
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Basic routing works',
+            'user' => auth()->check() ? [
+                'id' => auth()->id(),
+                'name' => auth()->user()->name,
+                'email' => auth()->user()->email,
+                'role' => auth()->user()->role,
+                'is_admin' => auth()->user()->isAdmin()
+            ] : 'Not authenticated',
+            'timestamp' => now()->toDateTimeString()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+})->middleware('auth');
+
+Route::get('/debug/admin-products-test', function () {
+    try {
+        $products = \App\Models\Product::paginate(5);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Product query works',
+            'products_count' => $products->count(),
+            'total_products' => $products->total(),
+            'sample_product' => $products->first() ? [
+                'id' => $products->first()->id,
+                'name' => $products->first()->name,
+                'sku' => $products->first()->sku
+            ] : null
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+})->middleware(['auth', 'admin']);
+
+Route::get('/debug/admin-view-test', function () {
+    try {
+        $products = \App\Models\Product::paginate(5);
+        return view('admin.products', compact('products'));
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+})->middleware(['auth', 'admin']);
+
 // Route de diagnostic CSRF (temporaire)
 Route::get('/csrf-status', function () {
     return response()->json([
@@ -794,6 +860,7 @@ Route::get('/test-product-view', function () {
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [App\Http\Controllers\AdminController::class, 'dashboard'])->name('index');
     Route::get('/dashboard', [App\Http\Controllers\AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/debug', [App\Http\Controllers\AdminController::class, 'debug'])->name('debug');
     Route::get('/products', [App\Http\Controllers\AdminController::class, 'products'])->name('products');
     Route::get('/orders', [App\Http\Controllers\AdminController::class, 'orders'])->name('orders');
     Route::get('/reports', [App\Http\Controllers\AdminController::class, 'reports'])->name('reports');
@@ -807,4 +874,50 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // Super Admin management
     Route::post('/users/{user}/make-super-admin', [App\Http\Controllers\AdminController::class, 'makeSuperAdmin'])->name('users.make-super-admin');
     Route::post('/users/{user}/remove-super-admin', [App\Http\Controllers\AdminController::class, 'removeSuperAdmin'])->name('users.remove-super-admin');
+});
+
+// Debug page for admin issues
+Route::get('/debug/admin-dashboard', function () {
+    return view('debug.admin');
+})->middleware('auth')->name('debug.admin');
+
+// Simple admin products test without middleware
+Route::get('/debug/simple-admin-products', function () {
+    try {
+        \Log::info('Simple admin products test started');
+
+        $products = \App\Models\Product::take(5)->get();
+
+        \Log::info('Products loaded successfully', ['count' => $products->count()]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Simple products query works',
+            'products_count' => $products->count(),
+            'products' => $products->map(function($p) {
+                return [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'sku' => $p->sku,
+                    'stock' => $p->stock_quantity
+                ];
+            })
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Simple admin products test failed', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => explode("\n", $e->getTraceAsString())
+        ], 500);
+    }
 });

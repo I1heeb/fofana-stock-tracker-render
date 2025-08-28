@@ -15,6 +15,56 @@ class AdminController extends Controller
     public function __construct()
     {
         // Middleware is handled by routes, no need for duplicate checks
+        \Log::info('AdminController constructor called');
+    }
+
+    /**
+     * Debug method to test basic functionality
+     */
+    public function debug()
+    {
+        try {
+            \Log::info('AdminController::debug - Starting debug method');
+
+            $data = [
+                'controller' => 'AdminController',
+                'method' => 'debug',
+                'user' => auth()->check() ? [
+                    'id' => auth()->id(),
+                    'name' => auth()->user()->name,
+                    'role' => auth()->user()->role,
+                    'is_admin' => auth()->user()->isAdmin()
+                ] : 'Not authenticated',
+                'products_count' => \App\Models\Product::count(),
+                'orders_count' => \App\Models\Order::count(),
+                'users_count' => \App\Models\User::count(),
+                'timestamp' => now()->toDateTimeString()
+            ];
+
+            \Log::info('AdminController::debug - Data compiled successfully', $data);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $data
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('AdminController::debug - Error occurred', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'controller' => 'AdminController',
+                'method' => 'debug'
+            ], 500);
+        }
     }
 
     /**
