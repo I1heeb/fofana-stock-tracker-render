@@ -41,7 +41,7 @@
     </div>
     
     <!-- Collapsible Content -->
-    <div class="collapse show" id="productSearchFilters" style="min-height: 50px; border: 1px solid #e5e7eb; background: #f9fafb;">
+    <div class="collapse show" id="productSearchFilters" style="min-height: 50px; border: 1px solid #e5e7eb; background: #f9fafb; display: block !important; visibility: visible !important; opacity: 1 !important;">
         <form method="GET" action="{{ route('products.index') }}" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Name/SKU Search -->

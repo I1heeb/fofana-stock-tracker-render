@@ -12,6 +12,32 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- Force search filter visibility -->
+    <style>
+        /* Force search filters to be visible */
+        #productSearchFilters, #searchFilters {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            height: auto !important;
+        }
+
+        /* Ensure Bootstrap collapse works properly */
+        .collapse:not(.show) {
+            display: none !important;
+        }
+
+        .collapse.show {
+            display: block !important;
+        }
+
+        /* Fix any potential z-index issues */
+        .modern-card {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
 </head>
 <body class="font-inter antialiased bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
     <div class="flex h-screen bg-gray-50">

@@ -49,7 +49,7 @@
         </div>
         
         <!-- Collapsible Content -->
-        <div class="collapse show" id="searchFilters" style="min-height: 50px; border: 1px solid #e5e7eb; background: #f9fafb;">
+        <div class="collapse show" id="searchFilters" style="min-height: 50px; border: 1px solid #e5e7eb; background: #f9fafb; display: block !important; visibility: visible !important; opacity: 1 !important;">
             <form method="GET" action="{{ route('orders.index') }}" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                     <!-- Order Number Search -->
