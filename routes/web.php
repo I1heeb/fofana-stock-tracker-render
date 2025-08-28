@@ -1006,7 +1006,7 @@ Route::get('/emergency/admin-users', function () {
 
         \Log::info('EMERGENCY ADMIN USERS - Users loaded', ['count' => $users->count()]);
 
-        return view('admin.users.simple-index', compact('users'));
+        return view('admin.users.ultra-simple', compact('users'));
 
     } catch (\Exception $e) {
         \Log::error('EMERGENCY ADMIN USERS - Failed', [
@@ -1078,9 +1078,11 @@ Route::get('/debug/test-user-model', function () {
 // TEST IF VIEW SYSTEM WORKS
 Route::get('/debug/test-view-system', function () {
     try {
-        return view('debug.minimal-users', ['users' => collect()]);
+        // Use proper pagination like the working route
+        $users = \App\Models\User::latest()->paginate(15);
+        return view('debug.minimal-users', compact('users'));
     } catch (\Exception $e) {
-        return '<h1>VIEW SYSTEM FAILED</h1><p>Error: ' . $e->getMessage() . '</p>';
+        return '<h1>VIEW SYSTEM FAILED</h1><p>Error: ' . $e->getMessage() . '</p><p>File: ' . $e->getFile() . '</p><p>Line: ' . $e->getLine() . '</p>';
     }
 });
 

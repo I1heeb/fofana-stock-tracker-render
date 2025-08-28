@@ -8,17 +8,21 @@
     
     <p>If you see this, basic view rendering works.</p>
     
-    <h2>Users Count: {{ $users->count() }}</h2>
-    
+    <h2>Users Count: {{ is_object($users) && method_exists($users, 'count') ? $users->count() : count($users) }}</h2>
+
     <h3>Users List:</h3>
     <ul>
-        @foreach($users as $user)
-            <li>{{ $user->name }} - {{ $user->email }} - {{ $user->role }}</li>
-        @endforeach
+        @if(is_object($users) && method_exists($users, 'count'))
+            @foreach($users as $user)
+                <li>{{ $user->name }} - {{ $user->email }} - {{ $user->role }}</li>
+            @endforeach
+        @else
+            <li>No users or invalid data</li>
+        @endif
     </ul>
-    
+
     <h3>Pagination:</h3>
-    <p>Total: {{ $users->total() }}</p>
+    <p>Total: {{ is_object($users) && method_exists($users, 'total') ? $users->total() : 'N/A' }}</p>
     
     <h3>Auth User:</h3>
     <p>Name: {{ auth()->user()->name }}</p>
