@@ -14,13 +14,7 @@ class AdminController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
-        $this->middleware(function ($request, $next) {
-            if (!Auth::check() || Auth::user()->role !== 'admin') {
-                abort(403, 'Access denied. Admin role required.');
-            }
-            return $next($request);
-        });
+        // Middleware is handled by routes, no need for duplicate checks
     }
 
     /**

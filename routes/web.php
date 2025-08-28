@@ -783,11 +783,10 @@ Route::get('/test-product-view', function () {
     return redirect()->route('products.show', $product);
 })->middleware('auth')->name('test.product.view');
 
-// Admin Routes
-Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
+// Admin Routes - Use consistent middleware
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [App\Http\Controllers\AdminController::class, 'dashboard'])->name('index');
     Route::get('/dashboard', [App\Http\Controllers\AdminController::class, 'dashboard'])->name('dashboard');
-    // Route::get('/users', [App\Http\Controllers\AdminController::class, 'users'])->name('users'); // REMOVED - conflicts with resource route
     Route::get('/products', [App\Http\Controllers\AdminController::class, 'products'])->name('products');
     Route::get('/orders', [App\Http\Controllers\AdminController::class, 'orders'])->name('orders');
     Route::get('/reports', [App\Http\Controllers\AdminController::class, 'reports'])->name('reports');

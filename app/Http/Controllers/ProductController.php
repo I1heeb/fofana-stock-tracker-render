@@ -15,12 +15,13 @@ class ProductController extends Controller
     {
         $query = Product::query()->with('supplier');
 
-        // Search by name or SKU
+        // Search by name, SKU, or barcode
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%");
+                  ->orWhere('sku', 'like', "%{$search}%")
+                  ->orWhere('barcode', 'like', "%{$search}%");
             });
         }
 

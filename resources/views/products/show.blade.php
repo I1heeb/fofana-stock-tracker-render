@@ -149,6 +149,7 @@
 
             <form action="{{ route('products.adjust-stock', $product) }}" method="POST" class="space-y-4">
                 @csrf
+                @method('PATCH')
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Stock Adjustment</label>
