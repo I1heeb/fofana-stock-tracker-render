@@ -334,13 +334,21 @@ function exportResults() {
     window.open(url, '_blank');
 }
 
-// Rotate arrow icon on collapse toggle
-document.getElementById('searchFilters').addEventListener('show.bs.collapse', function () {
-    document.getElementById('filterIcon').style.transform = 'rotate(180deg)';
-});
+// Ensure DOM is loaded before adding event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const filterElement = document.getElementById('searchFilters');
+    const iconElement = document.getElementById('filterIcon');
 
-document.getElementById('searchFilters').addEventListener('hide.bs.collapse', function () {
-    document.getElementById('filterIcon').style.transform = 'rotate(0deg)';
+    if (filterElement && iconElement) {
+        // Rotate arrow icon on collapse toggle
+        filterElement.addEventListener('show.bs.collapse', function () {
+            iconElement.style.transform = 'rotate(180deg)';
+        });
+
+        filterElement.addEventListener('hide.bs.collapse', function () {
+            iconElement.style.transform = 'rotate(0deg)';
+        });
+    }
 });
 </script>
 

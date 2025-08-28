@@ -24,12 +24,23 @@ class AdminController extends Controller
     }
 
     /**
-     * Display the admin dashboard - redirect to users management
+     * Display the admin dashboard
      */
     public function dashboard()
     {
-        // Redirect admin dashboard to users management interface
-        return redirect()->route('admin.users');
+        // Show admin dashboard with comprehensive stats
+        $stats = [
+            'total_users' => \App\Models\User::count(),
+            'total_products' => \App\Models\Product::count(),
+            'total_orders' => \App\Models\Order::count(),
+            'pending_orders' => \App\Models\Order::where('status', 'pending')->count(),
+            'total_revenue' => \App\Models\Order::where('status', 'completed')->sum('total_amount') ?? 0,
+            'low_stock_products' => \App\Models\Product::whereRaw('stock_quantity <= low_stock_threshold')->count(),
+            'recent_orders' => \App\Models\Order::with('user')->latest()->take(5)->get(),
+            'low_stock_products_list' => \App\Models\Product::whereRaw('stock_quantity <= low_stock_threshold')->take(5)->get(),
+        ];
+
+        return view('admin.dashboard', compact('stats'));
     }
 
     /**

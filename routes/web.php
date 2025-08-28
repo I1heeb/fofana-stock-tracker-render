@@ -155,19 +155,7 @@ Route::post('/emergency-login', function (Request $request) {
     if (Auth::attempt($credentials, $request->boolean('remember'))) {
         $request->session()->regenerate();
 
-        // Redirection spéciale pour les admins
-        $user = Auth::user();
-
-        // Nour Admin gets special dashboard
-        if ($user->email === 'nour@gmail.com') {
-            return redirect()->intended(route('admin.nour.dashboard'));
-        }
-
-        // Other admins get admin dashboard
-        if (in_array($user->email, ['iheb@admin.com', 'aaaa@dev.com']) || $user->role === 'admin') {
-            return redirect()->intended(route('admin.dashboard'));
-        }
-
+        // All users go to main dashboard
         return redirect()->intended(route('dashboard'));
     }
 
@@ -797,6 +785,7 @@ Route::get('/test-product-view', function () {
 
 // Admin Routes
 Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
+    Route::get('/', [App\Http\Controllers\AdminController::class, 'dashboard'])->name('index');
     Route::get('/dashboard', [App\Http\Controllers\AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/users', [App\Http\Controllers\AdminController::class, 'users'])->name('users');
     Route::get('/products', [App\Http\Controllers\AdminController::class, 'products'])->name('products');

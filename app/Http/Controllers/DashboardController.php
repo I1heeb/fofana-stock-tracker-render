@@ -16,16 +16,8 @@ class DashboardController extends Controller
 
     public function index()
     {
-        // Redirect admins to their proper dashboards
+        // All users (including admins) see the same main dashboard
         $user = auth()->user();
-
-        if ($user->email === 'nour@gmail.com') {
-            return redirect()->route('admin.nour.dashboard');
-        }
-
-        if (in_array($user->email, ['iheb@admin.com', 'aaaa@dev.com']) || $user->role === 'admin') {
-            return redirect()->route('admin.dashboard');
-        }
 
         try {
             $stats = [
