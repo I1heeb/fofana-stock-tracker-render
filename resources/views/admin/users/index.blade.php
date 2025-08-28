@@ -4,10 +4,10 @@
 <div class="space-y-6">
     <div class="flex justify-between items-center">
         <div>
-            <h2 class="text-3xl font-bold text-navy-900">User Management</h2>
+            <h2 class="text-3xl font-bold text-gray-900">User Management</h2>
             <p class="text-gray-600 mt-1">Manage system users and their permissions</p>
         </div>
-        <a href="{{ route('admin.users.create') }}" class="btn-primary">
+        <a href="{{ route('admin.users.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
             + Add User
         </a>
     </div>
@@ -24,19 +24,19 @@
             </div>
         @endif
 
-        <div class="modern-card overflow-hidden">
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="modern-table">
-                    <thead>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <th>User</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                            <th>Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($users as $user)
                         <tr class="hover:bg-gradient-to-r hover:from-yellow-50 hover:to-blue-50 transition-all duration-200">
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -86,7 +86,7 @@
                                 <div class="flex flex-col space-y-2">
                                     <div class="flex space-x-3">
                                         <a href="{{ route('admin.users.edit', $user) }}"
-                                           class="text-mustard-600 hover:text-mustard-700 font-medium">
+                                           class="text-blue-600 hover:text-blue-700 font-medium">
                                             ✏️ Edit
                                         </a>
 
