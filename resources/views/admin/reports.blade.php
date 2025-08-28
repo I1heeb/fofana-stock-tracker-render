@@ -8,7 +8,7 @@
             <h1 class="text-3xl font-bold text-gray-900">📊 Sales Reports</h1>
             <p class="text-gray-600 mt-2">Analytics and performance insights</p>
         </div>
-        <a href="{{ route('admin.users') }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+        <a href="{{ route('admin.dashboard') }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
             ← Back to Admin Dashboard
         </a>
     </div>
