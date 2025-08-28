@@ -1,7 +1,7 @@
 <<<<<<< HEAD
 # 📦 Fofana Stock Tracker
 
-> **Système de gestion de stock professionnel développé par Nour Amara**
+> **Système de gestion de stock professionnel développé par Iheb Chelbi**
 
 [![Laravel](https://img.shields.io/badge/Laravel-12.0-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.3-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
@@ -58,7 +58,7 @@
 
 ```bash
 # 1. Cloner le repository
-git clone https://github.com/nouramara123/fofana-stock-tracker.git
+git clone https://github.com/I1heeb/fofana-stock-tracker-render.git
 cd fofana-stock-tracker
 
 # 2. Installer les dépendances PHP
@@ -142,11 +142,10 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 
 ## 👨‍💻 Auteur
 
-**Nour Amara** - [@nouramara123](https://github.com/nouramara123)
+**Iheh** - [@I1heeb](I1heeb)
 
-- 📧 Email: nour@gmail.com
-- 💼 LinkedIn: [Votre LinkedIn]
-- 🐦 Twitter: [Votre Twitter]
+- 📧 Email: ihebxelbi@gmail.com
+- 💼 LinkedIn: https://www.linkedin.com/in/mohamed-iheb-chelbi-299aaa2a5
 
 ## 🙏 Remerciements
 
@@ -161,6 +160,6 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 
 
 =======
-# fofana-stock-tracker
+# fofana-stock-tracker-render
 Système de gestion de stock moderne avec Laravel 12
 >>>>>>> eb552ccfc3641ec8bf6b2c2f8390f3403b85e28e
