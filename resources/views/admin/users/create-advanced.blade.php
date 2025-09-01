@@ -80,12 +80,21 @@
                     </div>
 
                     <div>
-                        <label class="flex items-center mt-6">
-                            <input type="checkbox" name="is_super_admin" value="1" {{ old('is_super_admin') ? 'checked' : '' }}
-                                   class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <span class="ml-2 text-sm font-medium text-gray-700">🔥 Make Super Admin</span>
-                        </label>
-                        <p class="text-xs text-gray-500 mt-1">Super admins have unlimited access to everything</p>
+                        @if(auth()->user()->isSuperAdmin())
+                            <label class="flex items-center mt-6">
+                                <input type="checkbox" name="is_super_admin" value="1" {{ old('is_super_admin') ? 'checked' : '' }}
+                                       class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <span class="ml-2 text-sm font-medium text-gray-700">🔥 Make Super Admin</span>
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1">Super admins have unlimited access to everything</p>
+                        @else
+                            <div class="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <p class="text-sm text-yellow-800">
+                                    <span class="font-semibold">🔒 Super Admin Only:</span>
+                                    Only super admins can create other super admins.
+                                </p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -145,13 +154,16 @@ document.getElementById('role').addEventListener('change', function() {
     }
 });
 
-// Super admin checkbox behavior
-document.querySelector('input[name="is_super_admin"]').addEventListener('change', function() {
-    const checkboxes = document.querySelectorAll('input[name="permissions[]"]');
-    if (this.checked) {
-        // Check all permissions for super admin
-        checkboxes.forEach(cb => cb.checked = true);
-    }
-});
+// Super admin checkbox behavior (only if checkbox exists)
+const superAdminCheckbox = document.querySelector('input[name="is_super_admin"]');
+if (superAdminCheckbox) {
+    superAdminCheckbox.addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('input[name="permissions[]"]');
+        if (this.checked) {
+            // Check all permissions for super admin
+            checkboxes.forEach(cb => cb.checked = true);
+        }
+    });
+}
 </script>
 @endsection

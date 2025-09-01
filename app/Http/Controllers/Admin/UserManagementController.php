@@ -261,6 +261,12 @@ class UserManagementController extends Controller
             'is_super_admin' => 'boolean'
         ]);
 
+        // Only super admins can create other super admins
+        $isSuperAdmin = false;
+        if ($request->boolean('is_super_admin') && auth()->user()->isSuperAdmin()) {
+            $isSuperAdmin = true;
+        }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -268,7 +274,7 @@ class UserManagementController extends Controller
             'plain_password' => $request->password, // Store for super admin viewing
             'role' => $request->role,
             'permissions' => $request->permissions ?? [],
-            'is_super_admin' => $request->boolean('is_super_admin'),
+            'is_super_admin' => $isSuperAdmin,
         ]);
 
         return redirect()->route('admin.users.index')->with('success', "User {$user->name} created successfully with custom permissions.");

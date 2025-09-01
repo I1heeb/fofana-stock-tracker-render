@@ -99,14 +99,18 @@
                                         ✏️ Edit
                                     </a>
 
-                                    {{-- PASSWORD MANAGEMENT --}}
-                                    <button onclick="viewPassword({{ $user->id }}, '{{ $user->name }}')" class="text-green-600 hover:underline text-xs">
-                                        👁️ View Password
-                                    </button>
+                                    {{-- PASSWORD MANAGEMENT (super admin only) --}}
+                                    @if(auth()->user()->canViewPasswords())
+                                        <button onclick="viewPassword({{ $user->id }}, '{{ $user->name }}')" class="text-green-600 hover:underline text-xs">
+                                            👁️ View Password
+                                        </button>
+                                    @endif
 
-                                    <button onclick="changePassword({{ $user->id }}, '{{ $user->name }}')" class="text-purple-600 hover:underline text-xs">
-                                        🔑 Change Password
-                                    </button>
+                                    @if(auth()->user()->canChangeAnyPassword())
+                                        <button onclick="changePassword({{ $user->id }}, '{{ $user->name }}')" class="text-purple-600 hover:underline text-xs">
+                                            🔑 Change Password
+                                        </button>
+                                    @endif
 
                                     {{-- DELETE (with super admin protection) --}}
                                     @if($user->canBeDeletedBy(auth()->user()))
@@ -121,7 +125,8 @@
                                         <span class="text-gray-400 text-xs">🔒 Protected</span>
                                     @endif
 
-                                    @if($user->role === 'admin')
+                                    {{-- SUPER ADMIN MANAGEMENT (only super admins can manage super admin status) --}}
+                                    @if($user->role === 'admin' && auth()->user()->isSuperAdmin())
                                         @if($user->is_super_admin)
                                             <form action="{{ route('admin.users.remove-super-admin', $user) }}" method="POST" class="inline">
                                                 @csrf

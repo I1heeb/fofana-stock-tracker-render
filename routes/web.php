@@ -1396,6 +1396,38 @@ Route::get('/debug/fix-plain-passwords', function () {
     ]);
 })->middleware('auth');
 
+// DEBUG SUPER ADMIN PERMISSIONS
+Route::get('/debug/super-admin-check/{user}', function (\App\Models\User $user) {
+    if (!auth()->check()) {
+        return response()->json(['error' => 'Not authenticated']);
+    }
+
+    $currentUser = auth()->user();
+
+    return response()->json([
+        'current_user' => [
+            'name' => $currentUser->name,
+            'email' => $currentUser->email,
+            'role' => $currentUser->role,
+            'is_super_admin_field' => $currentUser->is_super_admin,
+            'is_super_admin_method' => $currentUser->isSuperAdmin(),
+            'email_check' => $currentUser->email === 'iheb@admin.com',
+        ],
+        'target_user' => [
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'is_super_admin_field' => $user->is_super_admin,
+            'is_super_admin_method' => $user->isSuperAdmin(),
+        ],
+        'permissions' => [
+            'can_manage_admins' => $currentUser->canManageAdmins(),
+            'can_view_passwords' => $currentUser->canViewPasswords(),
+            'can_create_custom_accounts' => $currentUser->canCreateCustomAccounts(),
+        ]
+    ], 200, [], JSON_PRETTY_PRINT);
+})->middleware('auth');
+
 // TEST WHAT ROUTES ARE ACTUALLY REGISTERED
 Route::get('/debug/list-admin-routes', function () {
     $routes = [];
