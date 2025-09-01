@@ -38,11 +38,10 @@ Route::middleware('auth')->group(function () {
 
 // ADMIN ONLY - Admin Panel (user management) - Use same middleware as other admin routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    // FULL RESOURCE ROUTES (index, create, store, show, edit, update, destroy)
     Route::resource('users', App\Http\Controllers\Admin\UserManagementController::class);
 
-    // EXPLICITLY ADD MISSING ROUTES
-    Route::delete('users/{user}', [App\Http\Controllers\Admin\UserManagementController::class, 'destroy'])->name('users.destroy');
-
+    // ADDITIONAL CUSTOM ROUTES
     Route::post('users/{user}/toggle-status', [App\Http\Controllers\Admin\UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::patch('users/{user}/update-role', [App\Http\Controllers\Admin\UserManagementController::class, 'updateRole'])->name('users.update-role');
 });
@@ -869,11 +868,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/orders', [App\Http\Controllers\AdminController::class, 'orders'])->name('orders');
     Route::get('/reports', [App\Http\Controllers\AdminController::class, 'reports'])->name('reports');
 
-    // User management (legacy routes - keeping for compatibility)
+    // User management (legacy routes - keeping for compatibility, EXCEPT DELETE which conflicts)
     Route::get('/users/create', [App\Http\Controllers\AdminController::class, 'createUser'])->name('users.create-legacy');
     Route::post('/users', [App\Http\Controllers\AdminController::class, 'storeUser'])->name('users.store-legacy');
     Route::patch('/users/{user}/role', [App\Http\Controllers\AdminController::class, 'updateUserRole'])->name('users.update-role-legacy');
-    Route::delete('/users/{user}', [App\Http\Controllers\AdminController::class, 'deleteUser'])->name('users.delete-legacy');
+    // REMOVED: Route::delete('/users/{user}') - CONFLICTS with new UserManagementController@destroy
 
     // Super Admin management
     Route::post('/users/{user}/make-super-admin', [App\Http\Controllers\AdminController::class, 'makeSuperAdmin'])->name('users.make-super-admin');

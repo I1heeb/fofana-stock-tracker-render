@@ -87,6 +87,15 @@ class UserManagementController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
 
+    public function show(User $user)
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Access denied. Admin privileges required.');
+        }
+
+        return view('admin.users.show', compact('user'));
+    }
+
     public function edit(User $user)
     {
         if (!auth()->user()->isAdmin()) {
