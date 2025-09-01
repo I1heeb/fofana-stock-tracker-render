@@ -1134,6 +1134,62 @@ Route::get('/debug/test-user-methods', function () {
     }
 });
 
+// TEST ADMIN USERS VIEW WITHOUT MIDDLEWARE
+Route::get('/debug/admin-users-no-middleware', function () {
+    try {
+        \Log::info('Testing admin users view without middleware');
+
+        $users = \App\Models\User::latest()->paginate(15);
+
+        \Log::info('Users loaded, attempting to render view');
+
+        return view('admin.users.no-methods', compact('users'));
+
+    } catch (\Exception $e) {
+        \Log::error('Admin users view failed', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ]);
+
+        return response()->json([
+            'error' => 'View failed',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => explode("\n", $e->getTraceAsString())
+        ], 500);
+    }
+}); // NO MIDDLEWARE AT ALL
+
+// TEST WITH DIFFERENT LAYOUT
+Route::get('/debug/admin-users-no-layout', function () {
+    try {
+        $users = \App\Models\User::latest()->paginate(15);
+
+        // Return raw HTML without layout
+        $html = '<h1>Admin Users - No Layout</h1>';
+        $html .= '<table border="1">';
+        $html .= '<tr><th>Name</th><th>Email</th><th>Role</th></tr>';
+
+        foreach ($users as $user) {
+            $html .= '<tr>';
+            $html .= '<td>' . $user->name . '</td>';
+            $html .= '<td>' . $user->email . '</td>';
+            $html .= '<td>' . $user->role . '</td>';
+            $html .= '</tr>';
+        }
+
+        $html .= '</table>';
+        $html .= '<p>Pagination: ' . $users->total() . ' total users</p>';
+
+        return $html;
+
+    } catch (\Exception $e) {
+        return '<h1>ERROR</h1><p>' . $e->getMessage() . '</p><p>File: ' . $e->getFile() . '</p><p>Line: ' . $e->getLine() . '</p>';
+    }
+}); // NO MIDDLEWARE, NO LAYOUT
+
 // MINIMAL USERS TEST - NO FANCY STUFF
 Route::get('/debug/minimal-users-test', function () {
     try {
