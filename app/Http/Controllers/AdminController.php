@@ -316,10 +316,16 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'User must be an admin first.');
         }
 
+        if ($user->isSuperAdmin()) {
+            return redirect()->back()->with('error', $user->name . ' is already a super admin.');
+        }
+
         $user->update(['is_super_admin' => true]);
 
-        return redirect()->back()->with('success', $user->name . ' is now a super admin.');
+        return redirect()->back()->with('success', '🔥 ' . $user->name . ' is now a SUPER ADMIN with full system access!');
     }
+
+
 
     /**
      * Remove super admin privileges
@@ -338,7 +344,7 @@ class AdminController extends Controller
 
         $user->update(['is_super_admin' => false]);
 
-        return redirect()->back()->with('success', $user->name . ' is no longer a super admin.');
+        return redirect()->back()->with('success', '👤 ' . $user->name . ' is now a regular admin.');
     }
 }
 

