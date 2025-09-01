@@ -44,6 +44,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // ADDITIONAL CUSTOM ROUTES
     Route::post('users/{user}/toggle-status', [App\Http\Controllers\Admin\UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::patch('users/{user}/update-role', [App\Http\Controllers\Admin\UserManagementController::class, 'updateRole'])->name('users.update-role');
+
+    // SUPER ADMIN ONLY ROUTES
+    Route::get('users/{user}/view-password', [App\Http\Controllers\Admin\UserManagementController::class, 'viewPassword'])->name('users.view-password');
+    Route::patch('users/{user}/change-password', [App\Http\Controllers\Admin\UserManagementController::class, 'changePassword'])->name('users.change-password');
+    Route::get('users/create-advanced', [App\Http\Controllers\Admin\UserManagementController::class, 'createAdvanced'])->name('users.create-advanced');
+    Route::post('users/store-advanced', [App\Http\Controllers\Admin\UserManagementController::class, 'storeAdvanced'])->name('users.store-advanced');
 });
 
 // Routes principales - Accès contrôlé par les permissions dans les contrôleurs

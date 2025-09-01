@@ -137,13 +137,20 @@ class UserManagementController extends Controller
         if (!auth()->user()->isAdmin()) {
             abort(403, 'Access denied. Admin privileges required.');
         }
-        
-        if ($user->isAdmin() && User::where('role', User::ROLE_ADMIN)->count() <= 1) {
-            return back()->with('error', 'Cannot delete the last admin user.');
+
+        // Prevent deleting yourself
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'You cannot delete yourself.');
         }
 
+        // Use the new protection logic
+        if (!$user->canBeDeletedBy(auth()->user())) {
+            return back()->with('error', 'You do not have permission to delete this user. Super admins cannot delete each other.');
+        }
+
+        $userName = $user->name;
         $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
+        return redirect()->route('admin.users.index')->with('success', "User {$userName} deleted successfully.");
     }
 
     public function toggleStatus(User $user)
@@ -173,6 +180,98 @@ class UserManagementController extends Controller
         ]);
 
         return back()->with('success', 'User role updated successfully.');
+    }
+
+    /**
+     * View password for a user (Super Admin only)
+     */
+    public function viewPassword(User $user)
+    {
+        if (!auth()->user()->canViewPasswords()) {
+            abort(403, 'Access denied. Super Admin privileges required.');
+        }
+
+        return response()->json([
+            'user' => $user->name,
+            'email' => $user->email,
+            'password' => $user->plain_password ?? 'Password not stored in plain text'
+        ]);
+    }
+
+    /**
+     * Change password for any user (Super Admin only)
+     */
+    public function changePassword(Request $request, User $user)
+    {
+        if (!auth()->user()->canChangeAnyPassword()) {
+            abort(403, 'Access denied. Super Admin privileges required.');
+        }
+
+        $request->validate([
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user->update([
+            'password' => Hash::make($request->new_password),
+            'plain_password' => $request->new_password, // Store for super admin viewing
+        ]);
+
+        return back()->with('success', "Password changed successfully for {$user->name}.");
+    }
+
+    /**
+     * Show advanced user creation form (Super Admin only)
+     */
+    public function createAdvanced()
+    {
+        if (!auth()->user()->canCreateCustomAccounts()) {
+            abort(403, 'Access denied. Super Admin privileges required.');
+        }
+
+        $allPermissions = [
+            'manage_users' => 'Manage Users',
+            'manage_admins' => 'Manage Admins',
+            'manage_super_admins' => 'Manage Super Admins',
+            'manage_products' => 'Manage Products',
+            'manage_orders' => 'Manage Orders',
+            'manage_suppliers' => 'Manage Suppliers',
+            'view_reports' => 'View Reports',
+            'manage_system' => 'Manage System',
+            'super_admin' => 'Super Admin Access'
+        ];
+
+        return view('admin.users.create-advanced', compact('allPermissions'));
+    }
+
+    /**
+     * Store advanced user with custom permissions (Super Admin only)
+     */
+    public function storeAdvanced(Request $request)
+    {
+        if (!auth()->user()->canCreateCustomAccounts()) {
+            abort(403, 'Access denied. Super Admin privileges required.');
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|in:admin,packaging_agent,service_client',
+            'permissions' => 'array',
+            'is_super_admin' => 'boolean'
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'plain_password' => $request->password, // Store for super admin viewing
+            'role' => $request->role,
+            'permissions' => $request->permissions ?? [],
+            'is_super_admin' => $request->boolean('is_super_admin'),
+        ]);
+
+        return redirect()->route('admin.users.index')->with('success', "User {$user->name} created successfully with custom permissions.");
     }
 }
 

@@ -57,6 +57,53 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user can view passwords (super admin only)
+     */
+    public function canViewPasswords()
+    {
+        return $this->isSuperAdmin();
+    }
+
+    /**
+     * Check if user can change any password (super admin only)
+     */
+    public function canChangeAnyPassword()
+    {
+        return $this->isSuperAdmin();
+    }
+
+    /**
+     * Check if user can create accounts with custom permissions (super admin only)
+     */
+    public function canCreateCustomAccounts()
+    {
+        return $this->isSuperAdmin();
+    }
+
+    /**
+     * Check if this user can be deleted by the given user
+     */
+    public function canBeDeletedBy(User $user)
+    {
+        // Super admins cannot delete each other
+        if ($this->isSuperAdmin() && $user->isSuperAdmin()) {
+            return false;
+        }
+
+        // Super admins can delete anyone else
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        // Regular admins can delete non-admins
+        if ($user->isAdmin() && !$this->isAdmin()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Check if user can edit/delete a specific user
      */
     public function canManageUser(User $targetUser): bool
@@ -159,6 +206,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'plain_password',
         'role',
         'is_super_admin',
         'permissions',

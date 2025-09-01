@@ -3,7 +3,14 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="bg-white rounded-lg shadow p-6">
-        <h1 class="text-2xl font-bold text-gray-900 mb-6">User Management - SAFE VERSION</h1>
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">User Management - SUPER ADMIN VERSION</h1>
+            @if(auth()->user()->canCreateCustomAccounts())
+                <a href="{{ route('admin.users.create-advanced') }}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    🔥 Create Advanced User
+                </a>
+            @endif
+        </div>
         
         <div class="mb-4 p-4 bg-gray-50 rounded-lg">
             <p class="font-semibold">
@@ -91,8 +98,18 @@
                                     <a href="{{ route('admin.users.edit', $user) }}" class="text-blue-600 hover:underline text-xs">
                                         ✏️ Edit
                                     </a>
-                                    
-                                    @if($user->email !== 'iheb@admin.com')
+
+                                    {{-- PASSWORD MANAGEMENT --}}
+                                    <button onclick="viewPassword({{ $user->id }}, '{{ $user->name }}')" class="text-green-600 hover:underline text-xs">
+                                        👁️ View Password
+                                    </button>
+
+                                    <button onclick="changePassword({{ $user->id }}, '{{ $user->name }}')" class="text-purple-600 hover:underline text-xs">
+                                        🔑 Change Password
+                                    </button>
+
+                                    {{-- DELETE (with super admin protection) --}}
+                                    @if($user->canBeDeletedBy(auth()->user()))
                                         <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
@@ -100,8 +117,10 @@
                                                 🗑️ Delete
                                             </button>
                                         </form>
+                                    @else
+                                        <span class="text-gray-400 text-xs">🔒 Protected</span>
                                     @endif
-                                    
+
                                     @if($user->role === 'admin')
                                         @if($user->is_super_admin)
                                             <form action="{{ route('admin.users.remove-super-admin', $user) }}" method="POST" class="inline">
@@ -155,4 +174,85 @@
         </div>
     </div>
 </div>
+
+{{-- PASSWORD MANAGEMENT MODALS --}}
+@if(auth()->user()->canViewPasswords())
+<!-- View Password Modal -->
+<div id="passwordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">👁️ View Password</h3>
+            <div id="passwordContent" class="mb-4"></div>
+            <div class="flex justify-end">
+                <button onclick="closePasswordModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">🔑 Change Password</h3>
+            <form id="changePasswordForm" method="POST">
+                @csrf
+                @method('PATCH')
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">New Password</label>
+                    <input type="password" name="new_password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                    <input type="password" name="new_password_confirmation" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeChangePasswordModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                        Change Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewPassword(userId, userName) {
+    fetch(`/admin/users/${userId}/view-password`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('passwordContent').innerHTML = `
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p><strong>User:</strong> ${data.user}</p>
+                    <p><strong>Email:</strong> ${data.email}</p>
+                    <p><strong>Password:</strong> <code class="bg-yellow-100 px-2 py-1 rounded">${data.password}</code></p>
+                </div>
+            `;
+            document.getElementById('passwordModal').classList.remove('hidden');
+        })
+        .catch(error => {
+            alert('Error viewing password: ' + error.message);
+        });
+}
+
+function changePassword(userId, userName) {
+    document.getElementById('changePasswordForm').action = `/admin/users/${userId}/change-password`;
+    document.getElementById('changePasswordModal').classList.remove('hidden');
+}
+
+function closePasswordModal() {
+    document.getElementById('passwordModal').classList.add('hidden');
+}
+
+function closeChangePasswordModal() {
+    document.getElementById('changePasswordModal').classList.add('hidden');
+}
+</script>
+@endif
+
 @endsection
