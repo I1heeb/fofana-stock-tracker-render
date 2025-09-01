@@ -39,6 +39,10 @@ Route::middleware('auth')->group(function () {
 // ADMIN ONLY - Admin Panel (user management) - Use same middleware as other admin routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('users', App\Http\Controllers\Admin\UserManagementController::class);
+
+    // EXPLICITLY ADD MISSING ROUTES
+    Route::delete('users/{user}', [App\Http\Controllers\Admin\UserManagementController::class, 'destroy'])->name('users.destroy');
+
     Route::post('users/{user}/toggle-status', [App\Http\Controllers\Admin\UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::patch('users/{user}/update-role', [App\Http\Controllers\Admin\UserManagementController::class, 'updateRole'])->name('users.update-role');
 });
@@ -1348,6 +1352,27 @@ Route::get('/debug/test-routes', function () {
             'line' => $e->getLine()
         ], 500);
     }
+});
+
+// TEST WHAT ROUTES ARE ACTUALLY REGISTERED
+Route::get('/debug/list-admin-routes', function () {
+    $routes = [];
+
+    foreach (Route::getRoutes() as $route) {
+        $name = $route->getName();
+        if ($name && str_starts_with($name, 'admin.users.')) {
+            $routes[$name] = [
+                'uri' => $route->uri(),
+                'methods' => $route->methods(),
+                'action' => $route->getActionName()
+            ];
+        }
+    }
+
+    return response()->json([
+        'admin_user_routes' => $routes,
+        'total_routes' => count($routes)
+    ], 200, [], JSON_PRETTY_PRINT);
 });
 
 // MINIMAL USERS TEST - NO FANCY STUFF
