@@ -1302,6 +1302,54 @@ Route::get('/debug/test-user-model-errors', function () {
     }
 })->middleware('auth');
 
+// TEST IF ROUTES EXIST
+Route::get('/debug/test-routes', function () {
+    try {
+        $user = \App\Models\User::first();
+
+        $routes = [];
+
+        // Test each route used in the view
+        try {
+            $routes['admin.users.edit'] = route('admin.users.edit', $user);
+        } catch (\Exception $e) {
+            $routes['admin.users.edit'] = 'ERROR: ' . $e->getMessage();
+        }
+
+        try {
+            $routes['admin.users.destroy'] = route('admin.users.destroy', $user);
+        } catch (\Exception $e) {
+            $routes['admin.users.destroy'] = 'ERROR: ' . $e->getMessage();
+        }
+
+        try {
+            $routes['admin.users.make-super-admin'] = route('admin.users.make-super-admin', $user);
+        } catch (\Exception $e) {
+            $routes['admin.users.make-super-admin'] = 'ERROR: ' . $e->getMessage();
+        }
+
+        try {
+            $routes['admin.users.remove-super-admin'] = route('admin.users.remove-super-admin', $user);
+        } catch (\Exception $e) {
+            $routes['admin.users.remove-super-admin'] = 'ERROR: ' . $e->getMessage();
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'routes' => $routes,
+            'user_id' => $user->id
+        ], 200, [], JSON_PRETTY_PRINT);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Route test failed',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ], 500);
+    }
+});
+
 // MINIMAL USERS TEST - NO FANCY STUFF
 Route::get('/debug/minimal-users-test', function () {
     try {
