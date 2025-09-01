@@ -15,6 +15,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Packaging User',
                 'password' => Hash::make('password'),
+                'plain_password' => 'password',
                 'role' => User::ROLE_PACKAGING_AGENT,
                 'permissions' => User::getDefaultPermissions(User::ROLE_PACKAGING_AGENT),
             ]
@@ -25,17 +26,19 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Service Client',
                 'password' => Hash::make('password'),
+                'plain_password' => 'password',
                 'role' => 'service_client',
                 'permissions' => User::getDefaultPermissions(User::ROLE_SERVICE_CLIENT),
             ]
         );
-        
+
         // Create REAL admin user
         User::firstOrCreate(
             ['email' => 'admin@example.com'],
             [
                 'name' => 'Admin User',
                 'password' => Hash::make('password'),
+                'plain_password' => 'password',
                 'role' => User::ROLE_ADMIN,
                 'permissions' => User::getDefaultPermissions(User::ROLE_ADMIN),
             ]
@@ -47,6 +50,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Nour',
                 'password' => Hash::make('nouramara'),
+                'plain_password' => 'nouramara',
                 'role' => User::ROLE_ADMIN,
                 'permissions' => User::getDefaultPermissions(User::ROLE_ADMIN),
             ]
@@ -57,8 +61,10 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Iheb',
                 'password' => Hash::make('12345678'),
+                'plain_password' => '12345678',
                 'role' => User::ROLE_ADMIN,
                 'permissions' => User::getDefaultPermissions(User::ROLE_ADMIN),
+                'is_super_admin' => true,
             ]
         );
 
@@ -67,6 +73,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'AAAA Dev',
                 'password' => Hash::make('nouramara'),
+                'plain_password' => 'nouramara',
                 'role' => User::ROLE_ADMIN,
                 'permissions' => User::getDefaultPermissions(User::ROLE_ADMIN),
             ]

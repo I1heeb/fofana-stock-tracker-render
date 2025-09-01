@@ -273,6 +273,39 @@ class UserManagementController extends Controller
 
         return redirect()->route('admin.users.index')->with('success', "User {$user->name} created successfully with custom permissions.");
     }
+
+    /**
+     * Make user super admin (Super Admin only)
+     */
+    public function makeSuperAdmin(User $user)
+    {
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403, 'Access denied. Super Admin privileges required.');
+        }
+
+        $user->update(['is_super_admin' => true]);
+
+        return back()->with('success', "{$user->name} is now a Super Admin.");
+    }
+
+    /**
+     * Remove super admin status (Super Admin only)
+     */
+    public function removeSuperAdmin(User $user)
+    {
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403, 'Access denied. Super Admin privileges required.');
+        }
+
+        // Prevent removing super admin from yourself
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'You cannot remove super admin status from yourself.');
+        }
+
+        $user->update(['is_super_admin' => false]);
+
+        return back()->with('success', "Super Admin status removed from {$user->name}.");
+    }
 }
 
 

@@ -38,18 +38,20 @@ Route::middleware('auth')->group(function () {
 
 // ADMIN ONLY - Admin Panel (user management) - Use same middleware as other admin routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    // SUPER ADMIN ONLY ROUTES (must be before resource routes to avoid conflicts)
+    Route::get('users/create-advanced', [App\Http\Controllers\Admin\UserManagementController::class, 'createAdvanced'])->name('users.create-advanced');
+    Route::post('users/store-advanced', [App\Http\Controllers\Admin\UserManagementController::class, 'storeAdvanced'])->name('users.store-advanced');
+    Route::get('users/{user}/view-password', [App\Http\Controllers\Admin\UserManagementController::class, 'viewPassword'])->name('users.view-password');
+    Route::patch('users/{user}/change-password', [App\Http\Controllers\Admin\UserManagementController::class, 'changePassword'])->name('users.change-password');
+
     // FULL RESOURCE ROUTES (index, create, store, show, edit, update, destroy)
     Route::resource('users', App\Http\Controllers\Admin\UserManagementController::class);
 
     // ADDITIONAL CUSTOM ROUTES
     Route::post('users/{user}/toggle-status', [App\Http\Controllers\Admin\UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::patch('users/{user}/update-role', [App\Http\Controllers\Admin\UserManagementController::class, 'updateRole'])->name('users.update-role');
-
-    // SUPER ADMIN ONLY ROUTES
-    Route::get('users/{user}/view-password', [App\Http\Controllers\Admin\UserManagementController::class, 'viewPassword'])->name('users.view-password');
-    Route::patch('users/{user}/change-password', [App\Http\Controllers\Admin\UserManagementController::class, 'changePassword'])->name('users.change-password');
-    Route::get('users/create-advanced', [App\Http\Controllers\Admin\UserManagementController::class, 'createAdvanced'])->name('users.create-advanced');
-    Route::post('users/store-advanced', [App\Http\Controllers\Admin\UserManagementController::class, 'storeAdvanced'])->name('users.store-advanced');
+    Route::post('users/{user}/make-super-admin', [App\Http\Controllers\Admin\UserManagementController::class, 'makeSuperAdmin'])->name('users.make-super-admin');
+    Route::post('users/{user}/remove-super-admin', [App\Http\Controllers\Admin\UserManagementController::class, 'removeSuperAdmin'])->name('users.remove-super-admin');
 });
 
 // Routes principales - Accès contrôlé par les permissions dans les contrôleurs
@@ -1358,6 +1360,41 @@ Route::get('/debug/test-routes', function () {
         ], 500);
     }
 });
+
+// QUICK FIX: Update existing users with plain passwords
+Route::get('/debug/fix-plain-passwords', function () {
+    if (!auth()->check() || !auth()->user()->isSuperAdmin()) {
+        abort(403, 'Super Admin only');
+    }
+
+    $users = [
+        'iheb@admin.com' => ['password' => '12345678', 'is_super_admin' => true],
+        'nour@gmail.com' => ['password' => 'nouramara', 'is_super_admin' => false],
+        'aaaa@dev.com' => ['password' => 'nouramara', 'is_super_admin' => false],
+        'admin@example.com' => ['password' => 'password', 'is_super_admin' => false],
+        'packaging@example.com' => ['password' => 'password', 'is_super_admin' => false],
+        'client@example.com' => ['password' => 'password', 'is_super_admin' => false],
+        'test@example.com' => ['password' => 'password', 'is_super_admin' => false],
+    ];
+
+    $updated = [];
+    foreach ($users as $email => $data) {
+        $user = \App\Models\User::where('email', $email)->first();
+        if ($user) {
+            $user->update([
+                'plain_password' => $data['password'],
+                'is_super_admin' => $data['is_super_admin']
+            ]);
+            $updated[] = $email;
+        }
+    }
+
+    return response()->json([
+        'message' => 'Plain passwords updated successfully',
+        'updated_users' => $updated,
+        'total' => count($updated)
+    ]);
+})->middleware('auth');
 
 // TEST WHAT ROUTES ARE ACTUALLY REGISTERED
 Route::get('/debug/list-admin-routes', function () {
