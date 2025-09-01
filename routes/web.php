@@ -1086,6 +1086,54 @@ Route::get('/debug/test-view-system', function () {
     }
 });
 
+// ABSOLUTE MINIMAL ADMIN USERS TEST
+Route::get('/debug/absolute-minimal-users', function () {
+    try {
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Basic response works',
+            'timestamp' => now()->toDateTimeString()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ], 500);
+    }
+});
+
+// TEST USER MODEL METHODS
+Route::get('/debug/test-user-methods', function () {
+    try {
+        $user = \App\Models\User::first();
+
+        return response()->json([
+            'status' => 'success',
+            'user_name' => $user->name,
+            'user_email' => $user->email,
+            'user_role' => $user->role,
+            'is_admin' => $user->isAdmin(),
+            'is_super_admin' => $user->isSuperAdmin(),
+            'can_manage_admins' => method_exists($user, 'canManageAdmins') ? $user->canManageAdmins() : 'method not found',
+            'methods_exist' => [
+                'canManageUser' => method_exists($user, 'canManageUser'),
+                'canDeleteUser' => method_exists($user, 'canDeleteUser'),
+                'canManageAdmins' => method_exists($user, 'canManageAdmins')
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => explode("\n", $e->getTraceAsString())
+        ], 500);
+    }
+});
+
 // MINIMAL USERS TEST - NO FANCY STUFF
 Route::get('/debug/minimal-users-test', function () {
     try {

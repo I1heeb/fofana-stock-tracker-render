@@ -32,8 +32,8 @@ class UserManagementController extends Controller
             $users = User::latest()->paginate(15);
             \Log::info('UserManagementController::index - Users loaded', ['count' => $users->count()]);
 
-            \Log::info('UserManagementController::index - Attempting to load view: admin.users.working-simple');
-            return view('admin.users.working-simple', compact('users'));
+            \Log::info('UserManagementController::index - Attempting to load view: admin.users.no-methods');
+            return view('admin.users.no-methods', compact('users'));
 
         } catch (\Exception $e) {
             \Log::error('UserManagementController::index - Error occurred', [
