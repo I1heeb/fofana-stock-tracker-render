@@ -1190,6 +1190,118 @@ Route::get('/debug/admin-users-no-layout', function () {
     }
 }); // NO MIDDLEWARE, NO LAYOUT
 
+// DEBUG PERMISSION METHODS INDIVIDUALLY
+Route::get('/debug/test-permission-methods', function () {
+    try {
+        $currentUser = auth()->user();
+        $testUser = \App\Models\User::where('email', '!=', $currentUser->email)->first();
+
+        $results = [
+            'current_user' => [
+                'name' => $currentUser->name,
+                'email' => $currentUser->email,
+                'role' => $currentUser->role,
+                'is_admin' => $currentUser->isAdmin(),
+                'is_super_admin' => $currentUser->isSuperAdmin(),
+            ],
+            'test_user' => [
+                'name' => $testUser->name,
+                'email' => $testUser->email,
+                'role' => $testUser->role,
+                'is_admin' => $testUser->isAdmin(),
+                'is_super_admin' => $testUser->isSuperAdmin(),
+            ],
+            'permission_tests' => []
+        ];
+
+        // Test each method individually
+        try {
+            $results['permission_tests']['canManageUser'] = $currentUser->canManageUser($testUser);
+        } catch (\Exception $e) {
+            $results['permission_tests']['canManageUser'] = 'ERROR: ' . $e->getMessage();
+        }
+
+        try {
+            $results['permission_tests']['canDeleteUser'] = $currentUser->canDeleteUser($testUser);
+        } catch (\Exception $e) {
+            $results['permission_tests']['canDeleteUser'] = 'ERROR: ' . $e->getMessage();
+        }
+
+        try {
+            $results['permission_tests']['canManageAdmins'] = $currentUser->canManageAdmins();
+        } catch (\Exception $e) {
+            $results['permission_tests']['canManageAdmins'] = 'ERROR: ' . $e->getMessage();
+        }
+
+        return response()->json($results, 200, [], JSON_PRETTY_PRINT);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Main error',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => explode("\n", $e->getTraceAsString())
+        ], 500);
+    }
+})->middleware('auth');
+
+// TEST SPECIFIC USER MODEL METHODS
+Route::get('/debug/test-user-model-errors', function () {
+    try {
+        $user = auth()->user();
+
+        $tests = [];
+
+        // Test basic methods
+        $tests['basic_methods'] = [
+            'isAdmin' => $user->isAdmin(),
+            'isSuperAdmin' => $user->isSuperAdmin(),
+        ];
+
+        // Test if methods exist
+        $tests['methods_exist'] = [
+            'canManageUser' => method_exists($user, 'canManageUser'),
+            'canDeleteUser' => method_exists($user, 'canDeleteUser'),
+            'canManageAdmins' => method_exists($user, 'canManageAdmins'),
+        ];
+
+        // Test calling methods with dummy data
+        $dummyUser = new \App\Models\User();
+        $dummyUser->id = 999;
+        $dummyUser->role = 'packaging_agent';
+        $dummyUser->is_super_admin = false;
+
+        try {
+            $tests['method_calls']['canManageUser'] = $user->canManageUser($dummyUser);
+        } catch (\Exception $e) {
+            $tests['method_calls']['canManageUser'] = 'ERROR: ' . $e->getMessage();
+        }
+
+        try {
+            $tests['method_calls']['canDeleteUser'] = $user->canDeleteUser($dummyUser);
+        } catch (\Exception $e) {
+            $tests['method_calls']['canDeleteUser'] = 'ERROR: ' . $e->getMessage();
+        }
+
+        try {
+            $tests['method_calls']['canManageAdmins'] = $user->canManageAdmins();
+        } catch (\Exception $e) {
+            $tests['method_calls']['canManageAdmins'] = 'ERROR: ' . $e->getMessage();
+        }
+
+        return response()->json($tests, 200, [], JSON_PRETTY_PRINT);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'User model test failed',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ], 500);
+    }
+})->middleware('auth');
+
 // MINIMAL USERS TEST - NO FANCY STUFF
 Route::get('/debug/minimal-users-test', function () {
     try {
