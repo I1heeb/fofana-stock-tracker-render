@@ -8,8 +8,16 @@ echo "🔧 Setting production environment..."
 export APP_ENV=production
 export APP_DEBUG=false
 export APP_KEY=base64:frICryS59HOmaoUtF03WgnrpFhnJSnkQlGROjzaePUI=
-export DB_CONNECTION=sqlite
-export DB_DATABASE=/var/www/html/database/database.sqlite
+
+# Use Supabase PostgreSQL (override any SQLite settings)
+if [ -n "$DB_HOST" ]; then
+    echo "🔗 Using Supabase PostgreSQL database"
+    export DB_CONNECTION=pgsql
+else
+    echo "⚠️ No DB_HOST found, falling back to SQLite"
+    export DB_CONNECTION=sqlite
+    export DB_DATABASE=/var/www/html/database/database.sqlite
+fi
 
 # Force HTTPS for all URLs (fix mixed content on Render)
 export FORCE_HTTPS=true
@@ -132,11 +140,10 @@ EOF
 echo "📊 Running database migrations..."
 php artisan migrate --force
 
-# Seed database if needed (only in development)
-if [ "$APP_ENV" = "local" ] || [ "$SEED_DATABASE" = "true" ]; then
-    echo "🌱 Seeding database..."
-    php artisan db:seed --force
-fi
+# NEVER SEED IN PRODUCTION - PRESERVES USER DATA
+echo "🔒 Skipping database seeding to preserve user data"
+echo "📊 Only migrations run - existing data preserved"
+# Note: To seed fresh database, use /setup/initial-data route
 
 # Clear and cache config for production (minimal caching to avoid conflicts)
 if [ "$APP_ENV" = "production" ]; then

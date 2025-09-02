@@ -51,8 +51,6 @@ services:
         value: stack
       - key: LOG_LEVEL
         value: error
-      - key: SEED_DATABASE
-        value: true
       - key: PORT
         value: 80
 
