@@ -1396,6 +1396,41 @@ Route::get('/debug/fix-plain-passwords', function () {
     ]);
 })->middleware('auth');
 
+// ONE-TIME INITIAL DATABASE SETUP
+Route::get('/setup/initial-data', function () {
+    // Check if already set up
+    if (\App\Models\User::count() > 0) {
+        return response()->json([
+            'error' => 'Database already has users. Setup already completed.',
+            'user_count' => \App\Models\User::count(),
+            'message' => 'This route can only be used on empty databases.'
+        ], 400);
+    }
+
+    try {
+        // Run seeders
+        Artisan::call('db:seed', ['--class' => 'UserSeeder', '--force' => true]);
+        Artisan::call('db:seed', ['--class' => 'ProductSeeder', '--force' => true]);
+        Artisan::call('db:seed', ['--class' => 'OrderSeeder', '--force' => true]);
+        Artisan::call('db:seed', ['--class' => 'LogSeeder', '--force' => true]);
+        Artisan::call('db:seed', ['--class' => 'UpdatePlainPasswordsSeeder', '--force' => true]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Initial database setup completed successfully!',
+            'users_created' => \App\Models\User::count(),
+            'products_created' => \App\Models\Product::count(),
+            'orders_created' => \App\Models\Order::count(),
+            'warning' => 'This route is now disabled. Future deployments will preserve data.'
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Setup failed: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
 // DEBUG SUPER ADMIN PERMISSIONS
 Route::get('/debug/super-admin-check/{user}', function (\App\Models\User $user) {
     if (!auth()->check()) {

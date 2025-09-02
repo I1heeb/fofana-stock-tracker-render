@@ -27,17 +27,13 @@ php artisan migrate --force
 
 echo "✅ Database migrations completed"
 
-# Seed the database with initial data
-echo "🌱 Seeding database with initial data..."
-php artisan db:seed --force
+# NEVER RUN SEEDERS ON DEPLOYMENT - PRESERVES USER DATA
+echo "🔒 Skipping database seeding to preserve existing data"
+echo "📊 Only running migrations - user data will be preserved"
+echo "✅ Data preservation mode enabled"
 
-echo "✅ Database seeded successfully"
-
-# Update existing users with plain passwords
-echo "🔑 Updating user passwords for super admin features..."
-php artisan db:seed --class=UpdatePlainPasswordsSeeder --force
-
-echo "✅ User passwords updated"
+# Note: To seed fresh database, run manually:
+# php artisan db:seed --force
 
 # Optimize for production
 php artisan config:cache
