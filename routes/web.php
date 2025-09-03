@@ -1824,6 +1824,63 @@ Route::get('/debug/optimize-performance', function () {
     }
 });
 
+// MANUAL INDEX CREATION (after deployment)
+Route::get('/debug/add-indexes-manually', function () {
+    try {
+        // Force PostgreSQL connection
+        config(['database.connections.pgsql.host' => 'aws-1-eu-west-3.pooler.supabase.com']);
+        config(['database.connections.pgsql.port' => 6543]);
+        config(['database.connections.pgsql.database' => 'postgres']);
+        config(['database.connections.pgsql.username' => 'postgres.fiirszqosyhhuqbpbily']);
+        config(['database.connections.pgsql.password' => 'xhCtn3oRTksrcmc6']);
+        config(['database.default' => 'pgsql']);
+
+        $output = [];
+        $indexesAdded = 0;
+
+        // Add indexes manually with raw SQL (safer than migration)
+        $indexes = [
+            "CREATE INDEX CONCURRENTLY IF NOT EXISTS products_name_idx ON products(name)",
+            "CREATE INDEX CONCURRENTLY IF NOT EXISTS products_barcode_idx ON products(barcode)",
+            "CREATE INDEX CONCURRENTLY IF NOT EXISTS products_stock_qty_idx ON products(stock_quantity)",
+            "CREATE INDEX CONCURRENTLY IF NOT EXISTS orders_status_idx ON orders(status)",
+            "CREATE INDEX CONCURRENTLY IF NOT EXISTS orders_created_at_idx ON orders(created_at)",
+            "CREATE INDEX CONCURRENTLY IF NOT EXISTS users_email_idx ON users(email)",
+            "CREATE INDEX CONCURRENTLY IF NOT EXISTS users_role_idx ON users(role)",
+        ];
+
+        foreach ($indexes as $sql) {
+            try {
+                DB::statement($sql);
+                $indexName = preg_match('/(\w+_\w+_idx)/', $sql, $matches) ? $matches[1] : 'unknown';
+                $output[] = "✅ Added index: " . $indexName;
+                $indexesAdded++;
+            } catch (\Exception $e) {
+                if (str_contains($e->getMessage(), 'already exists')) {
+                    $output[] = "⚠️ Index already exists: " . $sql;
+                } else {
+                    $output[] = "❌ Failed to add index: " . $e->getMessage();
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Manual index creation completed!',
+            'indexes_added' => $indexesAdded,
+            'output' => $output,
+            'note' => 'CONCURRENTLY indexes are added without blocking queries'
+        ], 200, [], JSON_PRETTY_PRINT);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Manual index creation failed',
+            'message' => $e->getMessage()
+        ], 500, [], JSON_PRETTY_PRINT);
+    }
+});
+
 // ONE-TIME INITIAL DATABASE SETUP
 Route::get('/setup/initial-data', function () {
     // Check if already set up
