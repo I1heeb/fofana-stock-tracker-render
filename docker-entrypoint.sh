@@ -45,14 +45,20 @@ chown www-data:www-data /var/www/html/database/database.sqlite
 chmod 664 /var/www/html/database/database.sqlite
 echo "✅ SQLite database file created and configured"
 
-# Wait for database to be ready (if using external DB)
+# Wait for database to be ready (if using external DB) with timeout
 if [ "$DB_CONNECTION" = "pgsql" ]; then
-    echo "⏳ Waiting for PostgreSQL to be ready..."
-    until pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME"; do
-        echo "PostgreSQL is unavailable - sleeping"
-        sleep 2
-    done
-    echo "✅ PostgreSQL is ready!"
+    echo "⏳ Testing PostgreSQL connection (30 second timeout)..."
+
+    # Try to connect with timeout
+    timeout 30 bash -c "until pg_isready -h '$DB_HOST' -p '$DB_PORT' -U '$DB_USERNAME'; do echo 'PostgreSQL is unavailable - sleeping'; sleep 2; done" && {
+        echo "✅ PostgreSQL is ready!"
+    } || {
+        echo "⚠️ PostgreSQL connection failed after 30 seconds"
+        echo "🔄 Falling back to SQLite for deployment"
+        export DB_CONNECTION=sqlite
+        export DB_DATABASE=/var/www/html/database/database.sqlite
+        echo "📊 Using fallback database: SQLite"
+    }
 fi
 
 # Clear any cached configuration that might interfere

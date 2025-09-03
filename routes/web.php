@@ -1431,6 +1431,40 @@ Route::get('/setup/initial-data', function () {
     }
 });
 
+// FORCE SUPABASE CONNECTION (for testing)
+Route::get('/debug/force-supabase', function () {
+    try {
+        // Temporarily override config
+        config(['database.connections.pgsql.host' => 'db.fiirszqosyhhuqbpbily.supabase.co']);
+        config(['database.connections.pgsql.port' => 5432]);
+        config(['database.connections.pgsql.database' => 'postgres']);
+        config(['database.connections.pgsql.username' => 'postgres']);
+        config(['database.connections.pgsql.password' => 'xhCtn3oRTksrcmc6']);
+        config(['database.default' => 'pgsql']);
+
+        // Test connection
+        $connection = DB::connection('pgsql');
+        $result = $connection->select('SELECT version()');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Successfully connected to Supabase!',
+            'postgresql_version' => $result[0]->version ?? 'Unknown',
+            'host' => 'db.fiirszqosyhhuqbpbily.supabase.co',
+            'database' => 'postgres'
+        ], 200, [], JSON_PRETTY_PRINT);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Failed to connect to Supabase',
+            'message' => $e->getMessage(),
+            'host' => 'db.fiirszqosyhhuqbpbily.supabase.co',
+            'port' => 5432
+        ], 500, [], JSON_PRETTY_PRINT);
+    }
+});
+
 // DEBUG DATABASE CONNECTION
 Route::get('/debug/database-connection', function () {
     try {
