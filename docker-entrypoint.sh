@@ -9,13 +9,13 @@ export APP_ENV=production
 export APP_DEBUG=false
 export APP_KEY=base64:frICryS59HOmaoUtF03WgnrpFhnJSnkQlGROjzaePUI=
 
-# FORCE SUPABASE POSTGRESQL CONNECTION
-echo "🔗 FORCING Supabase PostgreSQL database connection"
+# FORCE SUPABASE POSTGRESQL CONNECTION (using pooler)
+echo "🔗 FORCING Supabase PostgreSQL database connection via pooler"
 export DB_CONNECTION=pgsql
-export DB_HOST=db.fiirszqosyhuhqbpb1y.supabase.co
-export DB_PORT=5432
+export DB_HOST=aws-0-us-east-1.pooler.supabase.com
+export DB_PORT=6543
 export DB_DATABASE=postgres
-export DB_USERNAME=postgres
+export DB_USERNAME=postgres.fiirszqosyhuhqbpb1y
 export DB_PASSWORD=xhCtn3oRTksrcmc6
 export DB_SSLMODE=require
 
