@@ -9,10 +9,10 @@ export APP_ENV=production
 export APP_DEBUG=false
 export APP_KEY=base64:frICryS59HOmaoUtF03WgnrpFhnJSnkQlGROjzaePUI=
 
-# FORCE SUPABASE POSTGRESQL CONNECTION (direct connection)
-echo "🔗 FORCING Supabase PostgreSQL database connection (direct)"
+# FORCE SUPABASE POSTGRESQL CONNECTION (correct project ref)
+echo "🔗 FORCING Supabase PostgreSQL database connection (CORRECT PROJECT)"
 export DB_CONNECTION=pgsql
-export DB_HOST=db.fiirszqosyhuhqbpb1y.supabase.co
+export DB_HOST=db.fiirszqosyhhuqbpbily.supabase.co
 export DB_PORT=5432
 export DB_DATABASE=postgres
 export DB_USERNAME=postgres

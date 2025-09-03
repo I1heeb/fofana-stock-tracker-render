@@ -24,7 +24,7 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        value: db.fiirszqosyhuhqbpb1y.supabase.co
+        value: db.fiirszqosyhhuqbpbily.supabase.co
       - key: DB_PORT
         value: 5432
       - key: DB_DATABASE
@@ -36,7 +36,7 @@ services:
       - key: DB_SSLMODE
         value: require
       - key: SUPABASE_URL
-        value: https://fiirszqosyhuhqbpb1y.supabase.co
+        value: https://fiirszqosyhhuqbpbily.supabase.co
       - key: SUPABASE_ANON_KEY
         value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpaXJzenFvc3loaHVxYnBiaWx5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4NDc3MzksImV4cCI6MjA3MjQyMzczOX0.h2hgkg0djW110DODX6MkAeBFHot2V5Nx66rCXBB9QSY
       - key: SUPABASE_SERVICE_KEY
