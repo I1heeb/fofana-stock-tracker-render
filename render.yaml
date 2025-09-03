@@ -24,13 +24,13 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        value: aws-0-us-east-1.pooler.supabase.com
+        value: db.fiirszqosyhuhqbpb1y.supabase.co
       - key: DB_PORT
-        value: 6543
+        value: 5432
       - key: DB_DATABASE
         value: postgres
       - key: DB_USERNAME
-        value: postgres.fiirszqosyhuhqbpb1y
+        value: postgres
       - key: DB_PASSWORD
         value: xhCtn3oRTksrcmc6
       - key: DB_SSLMODE
