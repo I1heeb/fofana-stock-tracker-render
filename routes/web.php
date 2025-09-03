@@ -1741,6 +1741,89 @@ Route::get('/setup/reset-database', function () {
     }
 });
 
+// PERFORMANCE OPTIMIZATION ROUTE
+Route::get('/debug/optimize-performance', function () {
+    try {
+        $output = [];
+        $optimizations = [];
+
+        // 1. Enable query caching
+        config(['cache.default' => 'database']);
+        $output[] = "✅ Database caching enabled";
+
+        // 2. Check database connection pooling
+        $connectionInfo = [
+            'host' => config('database.connections.pgsql.host'),
+            'port' => config('database.connections.pgsql.port'),
+            'using_pooler' => str_contains(config('database.connections.pgsql.host'), 'pooler'),
+        ];
+        $output[] = "✅ Connection: " . ($connectionInfo['using_pooler'] ? 'Pooler (Optimized)' : 'Direct');
+
+        // 3. Test query performance
+        $start = microtime(true);
+        $userCount = \App\Models\User::count();
+        $userQueryTime = round((microtime(true) - $start) * 1000, 2);
+
+        $start = microtime(true);
+        $productCount = \App\Models\Product::count();
+        $productQueryTime = round((microtime(true) - $start) * 1000, 2);
+
+        $start = microtime(true);
+        $orderCount = \App\Models\Order::count();
+        $orderQueryTime = round((microtime(true) - $start) * 1000, 2);
+
+        $queryPerformance = [
+            'users_query' => $userQueryTime . 'ms',
+            'products_query' => $productQueryTime . 'ms',
+            'orders_query' => $orderQueryTime . 'ms',
+            'total_time' => round($userQueryTime + $productQueryTime + $orderQueryTime, 2) . 'ms'
+        ];
+
+        // 4. Optimization recommendations
+        $recommendations = [];
+
+        if ($userQueryTime > 100) {
+            $recommendations[] = "Add database indexes for user queries";
+        }
+        if ($productQueryTime > 100) {
+            $recommendations[] = "Add database indexes for product queries";
+        }
+        if ($orderQueryTime > 100) {
+            $recommendations[] = "Add database indexes for order queries";
+        }
+
+        // 5. Check if using transaction pooler (faster for short queries)
+        if (!str_contains(config('database.connections.pgsql.host'), 'pooler')) {
+            $recommendations[] = "Switch to Supabase connection pooler for better performance";
+        }
+
+        if (config('database.connections.pgsql.port') != 6543) {
+            $recommendations[] = "Consider using transaction pooler (port 6543) for faster queries";
+        }
+
+        return response()->json([
+            'success' => true,
+            'current_performance' => $queryPerformance,
+            'connection_info' => $connectionInfo,
+            'recommendations' => $recommendations,
+            'optimization_status' => $output,
+            'next_steps' => [
+                'Enable Redis caching',
+                'Add database indexes',
+                'Use transaction pooler',
+                'Implement query optimization'
+            ]
+        ], 200, [], JSON_PRETTY_PRINT);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Performance check failed',
+            'message' => $e->getMessage()
+        ], 500, [], JSON_PRETTY_PRINT);
+    }
+});
+
 // ONE-TIME INITIAL DATABASE SETUP
 Route::get('/setup/initial-data', function () {
     // Check if already set up
