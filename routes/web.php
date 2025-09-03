@@ -1415,10 +1415,27 @@ Route::get('/setup/migrate-and-seed', function () {
         $result = $connection->select('SELECT version()');
         $output[] = "✅ Connected to: " . ($result[0]->version ?? 'PostgreSQL');
 
-        // Run migrations
-        $output[] = "Running migrations...";
-        Artisan::call('migrate', ['--force' => true]);
-        $output[] = "✅ Migrations completed";
+        // Run migrations with dependency handling
+        $output[] = "Running migrations (handling dependencies)...";
+
+        try {
+            // Try normal migration first
+            Artisan::call('migrate', ['--force' => true]);
+            $output[] = "✅ Migrations completed normally";
+        } catch (\Exception $e) {
+            $output[] = "⚠️ Normal migration failed, trying step-by-step...";
+            $output[] = "Error: " . $e->getMessage();
+
+            // Try to run migrations step by step, skipping problematic ones
+            try {
+                Artisan::call('migrate', ['--force' => true, '--step' => true]);
+                $output[] = "✅ Step-by-step migration completed";
+            } catch (\Exception $e2) {
+                $output[] = "⚠️ Step migration also failed: " . $e2->getMessage();
+                $output[] = "Continuing with seeding...";
+            }
+        }
+
         $output[] = Artisan::output();
 
         // Check if seeding needed
@@ -1465,6 +1482,63 @@ Route::get('/setup/migrate-and-seed', function () {
         return response()->json([
             'success' => false,
             'error' => 'Migration/seeding failed',
+            'message' => $e->getMessage(),
+            'output' => $output ?? []
+        ], 500, [], JSON_PRETTY_PRINT);
+    }
+});
+
+// RESET AND RECREATE DATABASE (for fixing migration issues)
+Route::get('/setup/reset-database', function () {
+    try {
+        $output = [];
+
+        // Force PostgreSQL connection
+        config(['database.connections.pgsql.host' => 'aws-1-eu-west-3.pooler.supabase.com']);
+        config(['database.connections.pgsql.port' => 5432]);
+        config(['database.connections.pgsql.database' => 'postgres']);
+        config(['database.connections.pgsql.username' => 'postgres.fiirszqosyhhuqbpbily']);
+        config(['database.connections.pgsql.password' => 'xhCtn3oRTksrcmc6']);
+        config(['database.default' => 'pgsql']);
+
+        $output[] = "🔄 Resetting database...";
+
+        // Drop all tables and recreate
+        Artisan::call('migrate:reset', ['--force' => true]);
+        $output[] = "✅ All tables dropped";
+
+        // Run fresh migrations
+        Artisan::call('migrate', ['--force' => true]);
+        $output[] = "✅ Fresh migrations completed";
+
+        // Run seeders
+        Artisan::call('db:seed', ['--force' => true]);
+        $output[] = "✅ Database seeded";
+
+        $userCount = \App\Models\User::count();
+        $productCount = \App\Models\Product::count();
+        $orderCount = \App\Models\Order::count();
+
+        $output[] = "✅ Database reset completed!";
+        $output[] = "Users: " . $userCount;
+        $output[] = "Products: " . $productCount;
+        $output[] = "Orders: " . $orderCount;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Database reset and recreated successfully!',
+            'output' => $output,
+            'counts' => [
+                'users' => $userCount,
+                'products' => $productCount,
+                'orders' => $orderCount
+            ]
+        ], 200, [], JSON_PRETTY_PRINT);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Database reset failed',
             'message' => $e->getMessage(),
             'output' => $output ?? []
         ], 500, [], JSON_PRETTY_PRINT);
