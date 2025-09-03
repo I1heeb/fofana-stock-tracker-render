@@ -116,6 +116,22 @@ php artisan config:show database.default || echo "Config show not available"
 echo "🔌 Testing database connection..."
 php artisan migrate:status || echo "Migration status check failed, proceeding anyway..."
 
+# If using PostgreSQL, run migrations to create tables
+if [ "$DB_CONNECTION" = "pgsql" ]; then
+    echo "📊 Running database migrations for PostgreSQL..."
+    php artisan migrate --force || echo "⚠️ Migration failed, continuing..."
+
+    echo "🔍 Checking if database needs initial seeding..."
+    USER_COUNT=$(php artisan tinker --execute="echo App\Models\User::count();" 2>/dev/null || echo "0")
+
+    if [ "$USER_COUNT" = "0" ]; then
+        echo "🌱 Database is empty - running initial seeding..."
+        php artisan db:seed --force || echo "⚠️ Seeding failed, continuing..."
+    else
+        echo "📊 Database has $USER_COUNT users - skipping seeding"
+    fi
+fi
+
 # Create a simple health check
 echo "🏥 Creating health check..."
 echo "<?php echo 'Laravel is working! Time: ' . date('Y-m-d H:i:s'); ?>" > /var/www/html/public/health.php
