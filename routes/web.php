@@ -1434,11 +1434,11 @@ Route::get('/setup/initial-data', function () {
 // FORCE SUPABASE CONNECTION (for testing)
 Route::get('/debug/force-supabase', function () {
     try {
-        // Temporarily override config
-        config(['database.connections.pgsql.host' => 'db.fiirszqosyhhuqbpbily.supabase.co']);
+        // Test IPv4 Session Pooler
+        config(['database.connections.pgsql.host' => 'aws-1-eu-west-3.pooler.supabase.com']);
         config(['database.connections.pgsql.port' => 5432]);
         config(['database.connections.pgsql.database' => 'postgres']);
-        config(['database.connections.pgsql.username' => 'postgres']);
+        config(['database.connections.pgsql.username' => 'postgres.fiirszqosyhhuqbpbily']);
         config(['database.connections.pgsql.password' => 'xhCtn3oRTksrcmc6']);
         config(['database.default' => 'pgsql']);
 
@@ -1448,19 +1448,58 @@ Route::get('/debug/force-supabase', function () {
 
         return response()->json([
             'success' => true,
-            'message' => 'Successfully connected to Supabase!',
+            'message' => 'Successfully connected to Supabase via Session Pooler!',
             'postgresql_version' => $result[0]->version ?? 'Unknown',
-            'host' => 'db.fiirszqosyhhuqbpbily.supabase.co',
+            'host' => 'aws-1-eu-west-3.pooler.supabase.com',
+            'connection_type' => 'IPv4 Session Pooler',
             'database' => 'postgres'
         ], 200, [], JSON_PRETTY_PRINT);
 
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
-            'error' => 'Failed to connect to Supabase',
+            'error' => 'Failed to connect to Supabase Session Pooler',
             'message' => $e->getMessage(),
-            'host' => 'db.fiirszqosyhhuqbpbily.supabase.co',
-            'port' => 5432
+            'host' => 'aws-1-eu-west-3.pooler.supabase.com',
+            'port' => 5432,
+            'connection_type' => 'IPv4 Session Pooler'
+        ], 500, [], JSON_PRETTY_PRINT);
+    }
+});
+
+// TEST TRANSACTION POOLER
+Route::get('/debug/force-supabase-transaction', function () {
+    try {
+        // Test IPv4 Transaction Pooler
+        config(['database.connections.pgsql.host' => 'aws-1-eu-west-3.pooler.supabase.com']);
+        config(['database.connections.pgsql.port' => 6543]);
+        config(['database.connections.pgsql.database' => 'postgres']);
+        config(['database.connections.pgsql.username' => 'postgres.fiirszqosyhhuqbpbily']);
+        config(['database.connections.pgsql.password' => 'xhCtn3oRTksrcmc6']);
+        config(['database.default' => 'pgsql']);
+
+        // Test connection
+        $connection = DB::connection('pgsql');
+        $result = $connection->select('SELECT version()');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Successfully connected to Supabase via Transaction Pooler!',
+            'postgresql_version' => $result[0]->version ?? 'Unknown',
+            'host' => 'aws-1-eu-west-3.pooler.supabase.com',
+            'port' => 6543,
+            'connection_type' => 'IPv4 Transaction Pooler',
+            'database' => 'postgres'
+        ], 200, [], JSON_PRETTY_PRINT);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Failed to connect to Supabase Transaction Pooler',
+            'message' => $e->getMessage(),
+            'host' => 'aws-1-eu-west-3.pooler.supabase.com',
+            'port' => 6543,
+            'connection_type' => 'IPv4 Transaction Pooler'
         ], 500, [], JSON_PRETTY_PRINT);
     }
 });
