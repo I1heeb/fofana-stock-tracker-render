@@ -17,8 +17,8 @@ return new class extends Migration
             // Drop any existing role constraint
             DB::statement('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
 
-            // Add the correct constraint with all valid roles
-            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'packaging', 'service_client'))");
+            // Add the correct constraint with all valid roles (including packaging_agent and super_admin)
+            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'packaging', 'packaging_agent', 'service_client', 'super_admin'))");
         }
     }
 

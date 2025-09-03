@@ -25,7 +25,7 @@ return new class extends Migration
         } else {
             // For PostgreSQL and other databases
             DB::statement('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
-            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'packaging_agent', 'service_client'))");
+            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'packaging', 'packaging_agent', 'service_client', 'super_admin'))");
         }
     }
 
@@ -43,7 +43,7 @@ return new class extends Migration
             });
         } else {
             DB::statement('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
-            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'packaging', 'service_client'))");
+            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'packaging', 'packaging_agent', 'service_client', 'super_admin'))");
         }
     }
 };

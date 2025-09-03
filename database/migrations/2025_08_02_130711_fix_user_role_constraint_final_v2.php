@@ -18,7 +18,7 @@ return new class extends Migration
             DB::statement('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
 
             // Ajouter la nouvelle contrainte avec tous les rôles valides
-            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'packaging_agent', 'service_client'))");
+            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'packaging', 'packaging_agent', 'service_client', 'super_admin'))");
         }
     }
 
@@ -33,7 +33,7 @@ return new class extends Migration
             DB::statement('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
 
             // Remettre l'ancienne contrainte (si nécessaire)
-            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'packaging', 'service_client'))");
+            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'packaging', 'packaging_agent', 'service_client', 'super_admin'))");
         }
     }
 };
