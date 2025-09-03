@@ -11,56 +11,101 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            // Add indexes for common queries
-            $table->index('email');
-            $table->index('role');
-            $table->index(['role', 'is_super_admin']);
-        });
+        // Add indexes safely (skip if already exists)
+        try {
+            Schema::table('users', function (Blueprint $table) {
+                // Add indexes for common queries
+                if (!$this->indexExists('users', 'users_email_index')) {
+                    $table->index('email');
+                }
+                if (!$this->indexExists('users', 'users_role_index')) {
+                    $table->index('role');
+                }
+                if (!$this->indexExists('users', 'users_role_is_super_admin_index')) {
+                    $table->index(['role', 'is_super_admin']);
+                }
+            });
+        } catch (\Exception $e) {
+            // Skip if table doesn't exist or indexes already exist
+        }
 
-        Schema::table('products', function (Blueprint $table) {
-            // Add indexes for product searches
-            $table->index('name');
-            $table->index('barcode');
-            $table->index('supplier_id');
-            $table->index(['supplier_id', 'name']);
-            $table->index('stock_quantity');
-            $table->index(['stock_quantity', 'low_stock_threshold']);
-        });
+        try {
+            Schema::table('products', function (Blueprint $table) {
+                // Add indexes for product searches (skip if exists)
+                if (!$this->indexExists('products', 'products_name_index')) {
+                    $table->index('name');
+                }
+                if (!$this->indexExists('products', 'products_barcode_index')) {
+                    $table->index('barcode');
+                }
+                if (!$this->indexExists('products', 'products_supplier_id_index')) {
+                    $table->index('supplier_id');
+                }
+                if (!$this->indexExists('products', 'products_supplier_id_name_index')) {
+                    $table->index(['supplier_id', 'name']);
+                }
+                if (!$this->indexExists('products', 'products_stock_quantity_index')) {
+                    $table->index('stock_quantity');
+                }
+                if (!$this->indexExists('products', 'products_stock_quantity_low_stock_threshold_index')) {
+                    $table->index(['stock_quantity', 'low_stock_threshold']);
+                }
+            });
+        } catch (\Exception $e) {
+            // Skip if table doesn't exist or indexes already exist
+        }
 
-        Schema::table('orders', function (Blueprint $table) {
-            // Add indexes for order queries
-            $table->index('status');
-            $table->index('created_at');
-            $table->index(['status', 'created_at']);
-            $table->index('total_amount');
-        });
+        // Add other indexes safely
+        $this->addIndexSafely('orders', 'status');
+        $this->addIndexSafely('orders', 'created_at');
+        $this->addIndexSafely('orders', ['status', 'created_at']);
+        $this->addIndexSafely('orders', 'total_amount');
 
-        Schema::table('order_items', function (Blueprint $table) {
-            // Add indexes for order item queries
-            $table->index('order_id');
-            $table->index('product_id');
-            $table->index(['order_id', 'product_id']);
-        });
+        $this->addIndexSafely('order_items', 'order_id');
+        $this->addIndexSafely('order_items', 'product_id');
+        $this->addIndexSafely('order_items', ['order_id', 'product_id']);
 
         if (Schema::hasTable('stock_histories')) {
-            Schema::table('stock_histories', function (Blueprint $table) {
-                // Add indexes for stock history queries
-                $table->index('product_id');
-                $table->index('user_id');
-                $table->index('created_at');
-                $table->index(['product_id', 'created_at']);
-            });
+            $this->addIndexSafely('stock_histories', 'product_id');
+            $this->addIndexSafely('stock_histories', 'user_id');
+            $this->addIndexSafely('stock_histories', 'created_at');
+            $this->addIndexSafely('stock_histories', ['product_id', 'created_at']);
         }
 
         if (Schema::hasTable('logs')) {
-            Schema::table('logs', function (Blueprint $table) {
-                // Add indexes for log queries
-                $table->index('user_id');
-                $table->index('action');
-                $table->index('created_at');
-                $table->index(['user_id', 'created_at']);
-            });
+            $this->addIndexSafely('logs', 'user_id');
+            $this->addIndexSafely('logs', 'action');
+            $this->addIndexSafely('logs', 'created_at');
+            $this->addIndexSafely('logs', ['user_id', 'created_at']);
+        }
+    }
+
+    /**
+     * Helper method to check if index exists
+     */
+    private function indexExists($table, $indexName)
+    {
+        try {
+            $indexes = \DB::select("SELECT indexname FROM pg_indexes WHERE tablename = ? AND indexname = ?", [$table, $indexName]);
+            return count($indexes) > 0;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Helper method to add index safely
+     */
+    private function addIndexSafely($table, $columns)
+    {
+        try {
+            if (Schema::hasTable($table)) {
+                Schema::table($table, function (Blueprint $table) use ($columns) {
+                    $table->index($columns);
+                });
+            }
+        } catch (\Exception $e) {
+            // Index already exists or other error - skip
         }
     }
 
@@ -69,50 +114,52 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex(['email']);
-            $table->dropIndex(['role']);
-            $table->dropIndex(['role', 'is_super_admin']);
-        });
-
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropIndex(['name']);
-            $table->dropIndex(['barcode']);
-            $table->dropIndex(['supplier_id']);
-            $table->dropIndex(['supplier_id', 'name']);
-            $table->dropIndex(['stock_quantity']);
-            $table->dropIndex(['stock_quantity', 'low_stock_threshold']);
-        });
-
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropIndex(['status']);
-            $table->dropIndex(['created_at']);
-            $table->dropIndex(['status', 'created_at']);
-            $table->dropIndex(['total_amount']);
-        });
-
-        Schema::table('order_items', function (Blueprint $table) {
-            $table->dropIndex(['order_id']);
-            $table->dropIndex(['product_id']);
-            $table->dropIndex(['order_id', 'product_id']);
-        });
-
-        if (Schema::hasTable('stock_histories')) {
-            Schema::table('stock_histories', function (Blueprint $table) {
-                $table->dropIndex(['product_id']);
-                $table->dropIndex(['user_id']);
-                $table->dropIndex(['created_at']);
-                $table->dropIndex(['product_id', 'created_at']);
+        // Drop indexes safely (ignore errors if they don't exist)
+        try {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropIndex(['email']);
+                $table->dropIndex(['role']);
+                $table->dropIndex(['role', 'is_super_admin']);
             });
+        } catch (\Exception $e) {
+            // Ignore if indexes don't exist
         }
 
-        if (Schema::hasTable('logs')) {
-            Schema::table('logs', function (Blueprint $table) {
-                $table->dropIndex(['user_id']);
-                $table->dropIndex(['action']);
-                $table->dropIndex(['created_at']);
-                $table->dropIndex(['user_id', 'created_at']);
+        try {
+            Schema::table('products', function (Blueprint $table) {
+                $table->dropIndex(['name']);
+                $table->dropIndex(['barcode']);
+                $table->dropIndex(['supplier_id']);
+                $table->dropIndex(['supplier_id', 'name']);
+                $table->dropIndex(['stock_quantity']);
+                $table->dropIndex(['stock_quantity', 'low_stock_threshold']);
             });
+        } catch (\Exception $e) {
+            // Ignore if indexes don't exist
+        }
+
+        // Drop other indexes safely
+        $this->dropIndexSafely('orders', ['status', 'created_at', 'total_amount']);
+        $this->dropIndexSafely('order_items', ['order_id', 'product_id']);
+        $this->dropIndexSafely('stock_histories', ['product_id', 'user_id', 'created_at']);
+        $this->dropIndexSafely('logs', ['user_id', 'action', 'created_at']);
+    }
+
+    /**
+     * Helper method to drop indexes safely
+     */
+    private function dropIndexSafely($table, $columns)
+    {
+        try {
+            if (Schema::hasTable($table)) {
+                Schema::table($table, function (Blueprint $table) use ($columns) {
+                    foreach ($columns as $column) {
+                        $table->dropIndex([$column]);
+                    }
+                });
+            }
+        } catch (\Exception $e) {
+            // Ignore if indexes don't exist
         }
     }
 };
