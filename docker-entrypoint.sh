@@ -9,15 +9,22 @@ export APP_ENV=production
 export APP_DEBUG=false
 export APP_KEY=base64:frICryS59HOmaoUtF03WgnrpFhnJSnkQlGROjzaePUI=
 
-# Use Supabase PostgreSQL (override any SQLite settings)
-if [ -n "$DB_HOST" ]; then
-    echo "🔗 Using Supabase PostgreSQL database"
-    export DB_CONNECTION=pgsql
-else
-    echo "⚠️ No DB_HOST found, falling back to SQLite"
-    export DB_CONNECTION=sqlite
-    export DB_DATABASE=/var/www/html/database/database.sqlite
-fi
+# FORCE SUPABASE POSTGRESQL CONNECTION
+echo "🔗 FORCING Supabase PostgreSQL database connection"
+export DB_CONNECTION=pgsql
+export DB_HOST=db.fiirszqosyhuhqbpb1y.supabase.co
+export DB_PORT=5432
+export DB_DATABASE=postgres
+export DB_USERNAME=postgres
+export DB_PASSWORD=xhCtn3oRTksrcmc6
+export DB_SSLMODE=require
+
+echo "📊 Database configuration:"
+echo "  DB_CONNECTION: $DB_CONNECTION"
+echo "  DB_HOST: $DB_HOST"
+echo "  DB_PORT: $DB_PORT"
+echo "  DB_DATABASE: $DB_DATABASE"
+echo "  DB_USERNAME: $DB_USERNAME"
 
 # Force HTTPS for all URLs (fix mixed content on Render)
 export FORCE_HTTPS=true

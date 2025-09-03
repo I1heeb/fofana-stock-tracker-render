@@ -1431,6 +1431,57 @@ Route::get('/setup/initial-data', function () {
     }
 });
 
+// DEBUG DATABASE CONNECTION
+Route::get('/debug/database-connection', function () {
+    try {
+        $connection = DB::connection();
+        $pdo = $connection->getPdo();
+
+        return response()->json([
+            'database_connection' => [
+                'driver' => $connection->getDriverName(),
+                'database_name' => $connection->getDatabaseName(),
+                'host' => config('database.connections.pgsql.host'),
+                'port' => config('database.connections.pgsql.port'),
+                'username' => config('database.connections.pgsql.username'),
+                'default_connection' => config('database.default'),
+            ],
+            'environment_variables' => [
+                'DB_CONNECTION' => env('DB_CONNECTION'),
+                'DB_HOST' => env('DB_HOST'),
+                'DB_PORT' => env('DB_PORT'),
+                'DB_DATABASE' => env('DB_DATABASE'),
+                'DB_USERNAME' => env('DB_USERNAME'),
+                'DB_PASSWORD' => env('DB_PASSWORD') ? 'SET' : 'NOT SET',
+            ],
+            'actual_connection_test' => [
+                'can_connect' => true,
+                'server_version' => $pdo->getAttribute(PDO::ATTR_SERVER_VERSION),
+                'connection_status' => $pdo->getAttribute(PDO::ATTR_CONNECTION_STATUS),
+            ],
+            'table_count' => [
+                'users' => \App\Models\User::count(),
+                'products' => \App\Models\Product::count(),
+                'orders' => \App\Models\Order::count(),
+            ]
+        ], 200, [], JSON_PRETTY_PRINT);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Database connection failed',
+            'message' => $e->getMessage(),
+            'environment_variables' => [
+                'DB_CONNECTION' => env('DB_CONNECTION'),
+                'DB_HOST' => env('DB_HOST'),
+                'DB_PORT' => env('DB_PORT'),
+                'DB_DATABASE' => env('DB_DATABASE'),
+                'DB_USERNAME' => env('DB_USERNAME'),
+                'DB_PASSWORD' => env('DB_PASSWORD') ? 'SET' : 'NOT SET',
+            ]
+        ], 500, [], JSON_PRETTY_PRINT);
+    }
+});
+
 // DEBUG SUPER ADMIN PERMISSIONS
 Route::get('/debug/super-admin-check/{user}', function (\App\Models\User $user) {
     if (!auth()->check()) {
