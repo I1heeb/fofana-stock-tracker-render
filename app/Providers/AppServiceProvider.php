@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Schema;
 use App\Models\Product;
 use App\Models\Order;
 use App\Observers\ProductObserver;
@@ -27,8 +28,16 @@ class AppServiceProvider extends ServiceProvider
         // Configure Tailwind pagination
         Paginator::useTailwind();
 
-        // Activer les observers
-        Product::observe(ProductObserver::class);
-        Order::observe(OrderObserver::class);
+        // Activer les observers (only if tables exist)
+        try {
+            if (Schema::hasTable('products')) {
+                Product::observe(ProductObserver::class);
+            }
+            if (Schema::hasTable('orders')) {
+                Order::observe(OrderObserver::class);
+            }
+        } catch (\Exception $e) {
+            // Skip observers if database not ready
+        }
     }
 }
