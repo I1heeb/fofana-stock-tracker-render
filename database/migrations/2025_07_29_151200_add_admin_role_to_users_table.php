@@ -12,8 +12,8 @@ return new class extends Migration
             // Drop the existing constraint
             DB::statement("ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check");
 
-            // Add the new constraint with admin role
-            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'packaging', 'service_client'))");
+            // Add the new constraint with all valid roles (including super_admin and packaging_agent)
+            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'packaging', 'packaging_agent', 'service_client', 'super_admin'))");
         }
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
         // Only run for non-SQLite databases
         if (DB::getDriverName() !== 'sqlite') {
             DB::statement("ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check");
-            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('packaging', 'service_client'))");
+            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('packaging', 'packaging_agent', 'service_client'))");
         }
     }
 };

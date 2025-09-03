@@ -1488,6 +1488,71 @@ Route::get('/setup/migrate-and-seed', function () {
     }
 });
 
+// FIX USER ROLES CONSTRAINT ISSUE
+Route::get('/debug/fix-user-roles', function () {
+    try {
+        // Force PostgreSQL connection
+        config(['database.connections.pgsql.host' => 'aws-1-eu-west-3.pooler.supabase.com']);
+        config(['database.connections.pgsql.port' => 5432]);
+        config(['database.connections.pgsql.database' => 'postgres']);
+        config(['database.connections.pgsql.username' => 'postgres.fiirszqosyhhuqbpbily']);
+        config(['database.connections.pgsql.password' => 'xhCtn3oRTksrcmc6']);
+        config(['database.default' => 'pgsql']);
+
+        $output = [];
+
+        // Check current user roles
+        $users = DB::table('users')->select('id', 'name', 'email', 'role')->get();
+        $output[] = "Found " . $users->count() . " users";
+
+        foreach ($users as $user) {
+            $output[] = "User: {$user->email} - Role: {$user->role}";
+        }
+
+        // Fix invalid roles
+        $validRoles = ['admin', 'packaging', 'service_client', 'super_admin'];
+        $fixedCount = 0;
+
+        foreach ($users as $user) {
+            if (!in_array($user->role, $validRoles)) {
+                // Convert invalid roles to admin
+                DB::table('users')->where('id', $user->id)->update(['role' => 'admin']);
+                $output[] = "Fixed user {$user->email}: {$user->role} → admin";
+                $fixedCount++;
+            }
+        }
+
+        $output[] = "Fixed {$fixedCount} users with invalid roles";
+
+        // Drop existing constraint if it exists
+        try {
+            DB::statement('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
+            $output[] = "Dropped existing role constraint";
+        } catch (\Exception $e) {
+            $output[] = "No existing constraint to drop";
+        }
+
+        // Add the correct constraint
+        DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'packaging', 'service_client', 'super_admin'))");
+        $output[] = "Added new role constraint with super_admin";
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User roles fixed successfully!',
+            'output' => $output,
+            'fixed_users' => $fixedCount
+        ], 200, [], JSON_PRETTY_PRINT);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Failed to fix user roles',
+            'message' => $e->getMessage(),
+            'output' => $output ?? []
+        ], 500, [], JSON_PRETTY_PRINT);
+    }
+});
+
 // RESET AND RECREATE DATABASE (for fixing migration issues)
 Route::get('/setup/reset-database', function () {
     try {
@@ -1649,6 +1714,67 @@ Route::get('/debug/force-supabase-transaction', function () {
             'host' => 'aws-1-eu-west-3.pooler.supabase.com',
             'port' => 6543,
             'connection_type' => 'IPv4 Transaction Pooler'
+        ], 500, [], JSON_PRETTY_PRINT);
+    }
+});
+
+// ANALYZE DATABASE STATE
+Route::get('/debug/analyze-database', function () {
+    try {
+        // Force PostgreSQL connection
+        config(['database.connections.pgsql.host' => 'aws-1-eu-west-3.pooler.supabase.com']);
+        config(['database.connections.pgsql.port' => 5432]);
+        config(['database.connections.pgsql.database' => 'postgres']);
+        config(['database.connections.pgsql.username' => 'postgres.fiirszqosyhhuqbpbily']);
+        config(['database.connections.pgsql.password' => 'xhCtn3oRTksrcmc6']);
+        config(['database.default' => 'pgsql']);
+
+        $analysis = [];
+
+        // Check what tables exist
+        $tables = DB::select("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+        $analysis['existing_tables'] = array_map(fn($t) => $t->table_name, $tables);
+
+        // Check users table structure and data
+        if (in_array('users', $analysis['existing_tables'])) {
+            $analysis['users_count'] = DB::table('users')->count();
+
+            // Get all distinct roles
+            $roles = DB::table('users')->select('role')->distinct()->get();
+            $analysis['existing_roles'] = array_map(fn($r) => $r->role, $roles->toArray());
+
+            // Get sample users
+            $sampleUsers = DB::table('users')->select('id', 'name', 'email', 'role')->limit(10)->get();
+            $analysis['sample_users'] = $sampleUsers->toArray();
+
+            // Check constraints
+            $constraints = DB::select("
+                SELECT constraint_name, check_clause
+                FROM information_schema.check_constraints
+                WHERE constraint_schema = 'public'
+                AND constraint_name LIKE '%users%'
+            ");
+            $analysis['existing_constraints'] = $constraints;
+        }
+
+        // Check migration status
+        if (in_array('migrations', $analysis['existing_tables'])) {
+            $migrations = DB::table('migrations')->orderBy('batch')->get();
+            $analysis['completed_migrations'] = $migrations->toArray();
+        }
+
+        return response()->json([
+            'success' => true,
+            'analysis' => $analysis,
+            'database' => 'Supabase PostgreSQL',
+            'host' => 'aws-1-eu-west-3.pooler.supabase.com'
+        ], 200, [], JSON_PRETTY_PRINT);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Database analysis failed',
+            'message' => $e->getMessage()
         ], 500, [], JSON_PRETTY_PRINT);
     }
 });
