@@ -1396,6 +1396,81 @@ Route::get('/debug/fix-plain-passwords', function () {
     ]);
 })->middleware('auth');
 
+// MANUAL MIGRATION AND SETUP
+Route::get('/setup/migrate-and-seed', function () {
+    try {
+        $output = [];
+
+        // Force PostgreSQL connection
+        config(['database.connections.pgsql.host' => 'aws-1-eu-west-3.pooler.supabase.com']);
+        config(['database.connections.pgsql.port' => 5432]);
+        config(['database.connections.pgsql.database' => 'postgres']);
+        config(['database.connections.pgsql.username' => 'postgres.fiirszqosyhhuqbpbily']);
+        config(['database.connections.pgsql.password' => 'xhCtn3oRTksrcmc6']);
+        config(['database.default' => 'pgsql']);
+
+        // Test connection
+        $output[] = "Testing Supabase connection...";
+        $connection = DB::connection('pgsql');
+        $result = $connection->select('SELECT version()');
+        $output[] = "✅ Connected to: " . ($result[0]->version ?? 'PostgreSQL');
+
+        // Run migrations
+        $output[] = "Running migrations...";
+        Artisan::call('migrate', ['--force' => true]);
+        $output[] = "✅ Migrations completed";
+        $output[] = Artisan::output();
+
+        // Check if seeding needed
+        $userCount = \App\Models\User::count();
+        $output[] = "Current user count: " . $userCount;
+
+        if ($userCount == 0) {
+            $output[] = "Database is empty - running seeders...";
+
+            // Run seeders
+            Artisan::call('db:seed', ['--class' => 'UserSeeder', '--force' => true]);
+            $output[] = "✅ UserSeeder completed";
+
+            Artisan::call('db:seed', ['--class' => 'ProductSeeder', '--force' => true]);
+            $output[] = "✅ ProductSeeder completed";
+
+            Artisan::call('db:seed', ['--class' => 'OrderSeeder', '--force' => true]);
+            $output[] = "✅ OrderSeeder completed";
+
+            Artisan::call('db:seed', ['--class' => 'UpdatePlainPasswordsSeeder', '--force' => true]);
+            $output[] = "✅ UpdatePlainPasswordsSeeder completed";
+
+            $finalUserCount = \App\Models\User::count();
+            $productCount = \App\Models\Product::count();
+            $orderCount = \App\Models\Order::count();
+
+            $output[] = "✅ Setup completed!";
+            $output[] = "Users created: " . $finalUserCount;
+            $output[] = "Products created: " . $productCount;
+            $output[] = "Orders created: " . $orderCount;
+        } else {
+            $output[] = "Database already has data - skipping seeding";
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Migration and seeding completed successfully!',
+            'output' => $output,
+            'database' => 'Supabase PostgreSQL',
+            'host' => 'aws-1-eu-west-3.pooler.supabase.com'
+        ], 200, [], JSON_PRETTY_PRINT);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Migration/seeding failed',
+            'message' => $e->getMessage(),
+            'output' => $output ?? []
+        ], 500, [], JSON_PRETTY_PRINT);
+    }
+});
+
 // ONE-TIME INITIAL DATABASE SETUP
 Route::get('/setup/initial-data', function () {
     // Check if already set up
