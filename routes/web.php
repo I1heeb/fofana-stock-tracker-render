@@ -1553,6 +1553,137 @@ Route::get('/debug/fix-user-roles', function () {
     }
 });
 
+// CHECK AND FIX USER CREDENTIALS
+Route::get('/debug/check-users', function () {
+    try {
+        // Force PostgreSQL connection
+        config(['database.connections.pgsql.host' => 'aws-1-eu-west-3.pooler.supabase.com']);
+        config(['database.connections.pgsql.port' => 5432]);
+        config(['database.connections.pgsql.database' => 'postgres']);
+        config(['database.connections.pgsql.username' => 'postgres.fiirszqosyhhuqbpbily']);
+        config(['database.connections.pgsql.password' => 'xhCtn3oRTksrcmc6']);
+        config(['database.default' => 'pgsql']);
+
+        $output = [];
+
+        // Check if users table exists
+        if (!Schema::hasTable('users')) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Users table does not exist',
+                'suggestion' => 'Run /setup/migrate-and-seed first'
+            ], 404, [], JSON_PRETTY_PRINT);
+        }
+
+        // Get all users
+        $users = \App\Models\User::all();
+        $output[] = "Found " . $users->count() . " users in database";
+
+        $userDetails = [];
+        foreach ($users as $user) {
+            $userDetails[] = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'is_super_admin' => $user->is_super_admin ?? false,
+                'plain_password' => $user->plain_password ?? 'Not stored',
+                'created_at' => $user->created_at
+            ];
+        }
+
+        // Check specific admin accounts
+        $ihebAdmin = \App\Models\User::where('email', 'iheb@admin.com')->first();
+        $adminExample = \App\Models\User::where('email', 'admin@example.com')->first();
+
+        $adminStatus = [
+            'iheb@admin.com' => $ihebAdmin ? 'EXISTS' : 'MISSING',
+            'admin@example.com' => $adminExample ? 'EXISTS' : 'MISSING'
+        ];
+
+        return response()->json([
+            'success' => true,
+            'total_users' => $users->count(),
+            'admin_accounts_status' => $adminStatus,
+            'all_users' => $userDetails,
+            'expected_credentials' => [
+                'iheb@admin.com' => '12345678',
+                'admin@example.com' => 'password',
+                'nour@gmail.com' => 'nouramara'
+            ],
+            'next_steps' => $users->count() == 0 ? 'Run /setup/migrate-and-seed to create users' : 'Try logging in with the credentials above'
+        ], 200, [], JSON_PRETTY_PRINT);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Failed to check users',
+            'message' => $e->getMessage()
+        ], 500, [], JSON_PRETTY_PRINT);
+    }
+});
+
+// CREATE MISSING ADMIN USERS
+Route::get('/debug/create-admin', function () {
+    try {
+        // Force PostgreSQL connection
+        config(['database.connections.pgsql.host' => 'aws-1-eu-west-3.pooler.supabase.com']);
+        config(['database.connections.pgsql.port' => 5432]);
+        config(['database.connections.pgsql.database' => 'postgres']);
+        config(['database.connections.pgsql.username' => 'postgres.fiirszqosyhhuqbpbily']);
+        config(['database.connections.pgsql.password' => 'xhCtn3oRTksrcmc6']);
+        config(['database.default' => 'pgsql']);
+
+        $output = [];
+
+        // Create iheb admin if missing
+        $ihebAdmin = \App\Models\User::firstOrCreate(
+            ['email' => 'iheb@admin.com'],
+            [
+                'name' => 'Iheb',
+                'password' => Hash::make('12345678'),
+                'plain_password' => '12345678',
+                'role' => 'admin',
+                'permissions' => \App\Models\User::getDefaultPermissions('admin'),
+                'is_super_admin' => true,
+            ]
+        );
+
+        $output[] = $ihebAdmin->wasRecentlyCreated ? 'Created iheb@admin.com' : 'iheb@admin.com already exists';
+
+        // Create admin example if missing
+        $adminExample = \App\Models\User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('password'),
+                'plain_password' => 'password',
+                'role' => 'admin',
+                'permissions' => \App\Models\User::getDefaultPermissions('admin'),
+            ]
+        );
+
+        $output[] = $adminExample->wasRecentlyCreated ? 'Created admin@example.com' : 'admin@example.com already exists';
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Admin users checked/created successfully!',
+            'output' => $output,
+            'credentials' => [
+                'iheb@admin.com' => '12345678',
+                'admin@example.com' => 'password'
+            ]
+        ], 200, [], JSON_PRETTY_PRINT);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Failed to create admin users',
+            'message' => $e->getMessage()
+        ], 500, [], JSON_PRETTY_PRINT);
+    }
+});
+
 // RESET AND RECREATE DATABASE (for fixing migration issues)
 Route::get('/setup/reset-database', function () {
     try {
